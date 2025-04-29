@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import evolvifyLogo from "../assets/images/logo.png";
 import { useNavigate } from "react-router-dom";
-import clickSoundFile from "../assets/images/sounds/button-click(chosic.com).mp3";
+import clickSoundFile from "../assets/sounds/button-click(chosic.com).mp3";
 
 function Quiz() {
   const [questions, setQuestions] = useState([]);
@@ -10,19 +10,18 @@ function Quiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const navigate = useNavigate();
 
-    const accessToken = localStorage.getItem("userToken");
-    const username = localStorage.getItem("username") || "Anonymous";
+  const accessToken = localStorage.getItem("userToken");
+  const username = localStorage.getItem("username") || "Anonymous";
 
-    axios.interceptors.request.use(
-      (config) => {
-        if (accessToken) {
-          config.headers.Authorization = `Bearer ${accessToken}`;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
+  axios.interceptors.request.use(
+    (config) => {
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
 
   const clickSound = new Audio(clickSoundFile);
 
