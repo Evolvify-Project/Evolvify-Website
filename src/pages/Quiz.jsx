@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import evolvifyLogo from "../assets/images/logo.png";
 import { useNavigate } from "react-router-dom";
-import clickSoundFile from "../assets/sounds/button-click(chosic.com).mp3";
+//import clickSoundFile from "../assets/sounds/button-click(chosic.com).mp3";
 
 function Quiz() {
   const [questions, setQuestions] = useState([]);
@@ -23,7 +23,7 @@ function Quiz() {
     (error) => Promise.reject(error)
   );
 
-  const clickSound = new Audio(clickSoundFile);
+ // const clickSound = new Audio(clickSoundFile);
 
   useEffect(() => {
     const fetchQuestions = async () => {

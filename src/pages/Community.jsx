@@ -17,9 +17,7 @@ const API_BASE_URL = "https://evolvify.runasp.net/api/Community";
 
 function Community() {
   const [activeTab, setActiveTab] = useState("My posts");
-  const [selectedCategory, setSelectedCategory] = useState(
-    "Communication skill"
-  );
+  const [selectedCategory, setSelectedCategory] = useState("Communication skill");
   const [newPost, setNewPost] = useState("");
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
@@ -30,6 +28,7 @@ function Community() {
 
   const accessToken = localStorage.getItem("userToken");
   const userName = localStorage.getItem("username") || "Anonymous";
+  const userRole = localStorage.getItem("userRole") || "User";
 
   axios.interceptors.request.use(
     (config) => {
@@ -94,7 +93,9 @@ function Community() {
     } catch (err) {
       setError("Failed to add post");
       console.error("Add post error:", err.response?.data || err.message);
-      navigate("/login");
+      if (err.response?.status === 401) {
+        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+      }
     }
   };
 
@@ -128,7 +129,9 @@ function Community() {
     } catch (err) {
       setError("Failed to toggle like");
       console.error("Toggle like error:", err.response?.data || err.message);
-      navigate("/login");
+      if (err.response?.status === 401) {
+        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+      }
     }
   };
 
@@ -152,9 +155,11 @@ function Community() {
       });
       setPosts(posts.filter((post) => post.id !== postId));
     } catch (err) {
-      setError("Failed to delete post");
+      setError("Failed to delete post: " + (err.response?.data?.message || err.message));
       console.error("Delete post error:", err.response?.data || err.message);
-      navigate("/login");
+      if (err.response?.status === 401) {
+        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+      }
     }
   };
 
@@ -201,6 +206,9 @@ function Community() {
         "Failed to fetch comments:",
         err.response?.data || err.message
       );
+      if (err.response?.status === 401) {
+        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+      }
     }
   };
 
@@ -218,6 +226,9 @@ function Community() {
         "Failed to add comment:",
         err.response?.data || err.message
       );
+      if (err.response?.status === 401) {
+        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+      }
     }
   };
 
@@ -232,6 +243,9 @@ function Community() {
       fetchComments(postId);
     } catch (err) {
       console.error("Failed to add reply:", err.response?.data || err.message);
+      if (err.response?.status === 401) {
+        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+      }
     }
   };
 
@@ -247,6 +261,9 @@ function Community() {
         "Failed to edit comment:",
         err.response?.data || err.message
       );
+      if (err.response?.status === 401) {
+        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+      }
     }
   };
 
@@ -259,6 +276,9 @@ function Community() {
         "Failed to delete comment:",
         err.response?.data || err.message
       );
+      if (err.response?.status === 401) {
+        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+      }
     }
   };
 
@@ -302,7 +322,9 @@ function Community() {
         "Toggle comment like error:",
         err.response?.data || err.message
       );
-      navigate("/login");
+      if (err.response?.status === 401) {
+        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+      }
     }
   };
 
@@ -353,7 +375,9 @@ function Community() {
         "Toggle reply like error:",
         err.response?.data || err.message
       );
-      navigate("/login");
+      if (err.response?.status === 401) {
+        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+      }
     }
   };
 
@@ -450,6 +474,7 @@ function Community() {
                 setError={setError}
                 setPosts={setPosts}
                 userName={userName}
+                userRole={userRole}
               />
             ))
           ) : (
@@ -483,6 +508,7 @@ function Post({
   setError,
   setPosts,
   userName,
+  userRole,
 }) {
   const [editingComment, setEditingComment] = useState(null);
   const [editContent, setEditContent] = useState("");
@@ -521,9 +547,13 @@ function Post({
       setError(
         "Failed to edit post: " + (err.response?.data?.message || err.message)
       );
-      navigate("/login");
+      if (err.response?.status === 401) {
+        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+      }
     }
   };
+
+  const canEditOrDeletePost = post.userName === userName || userRole === "Admin";
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
@@ -537,36 +567,38 @@ function Post({
             </p>
           </div>
         </div>
-        <div className="relative">
-          <button
-            onClick={() => setMenuOpen(menuOpen === post.id ? null : post.id)}
-          >
-            <FiMoreHorizontal className="text-gray-500" />
-          </button>
-          {menuOpen === post.id && (
-            <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border">
-              <button
-                onClick={() => {
-                  setEditingPost(true);
-                  setEditPostContent(post.content);
-                  setMenuOpen(null);
-                }}
-                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => {
-                  deletePost(post.id);
-                  setMenuOpen(null);
-                }}
-                className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
-              >
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
+        {canEditOrDeletePost && (
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen(menuOpen === post.id ? null : post.id)}
+            >
+              <FiMoreHorizontal className="text-gray-500" />
+            </button>
+            {menuOpen === post.id && (
+              <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border">
+                <button
+                  onClick={() => {
+                    setEditingPost(true);
+                    setEditPostContent(post.content);
+                    setMenuOpen(null);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                    deletePost(post.id);
+                    setMenuOpen(null);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       {editingPost ? (
         <div className="mt-4">
@@ -642,6 +674,8 @@ function Post({
               newReply={newReply}
               setNewReply={setNewReply}
               accessToken={accessToken}
+              userName={userName}
+              userRole={userRole}
             />
           ))}
           <div className="flex gap-2">
@@ -681,6 +715,8 @@ function Comment({
   newReply,
   setNewReply,
   accessToken,
+  userName,
+  userRole,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
@@ -688,6 +724,8 @@ function Comment({
   const handleToggleReplies = () => {
     setShowReplies(!showReplies);
   };
+
+  const canEditOrDeleteComment = comment.userName === userName || userRole === "Admin";
 
   return (
     <div className="bg-gray-50 p-4 rounded-lg">
@@ -728,34 +766,36 @@ function Comment({
             </p>
           )}
         </div>
-        <div className="relative">
-          <button onClick={() => setMenuOpen(!menuOpen)}>
-            <FiMoreHorizontal className="text-gray-500" />
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border">
-              <button
-                onClick={() => {
-                  setEditingComment(comment.id);
-                  setEditContent(comment.content);
-                  setMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => {
-                  deleteComment(postId, comment.id);
-                  setMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
-              >
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
+        {canEditOrDeleteComment && (
+          <div className="relative">
+            <button onClick={() => setMenuOpen(!menuOpen)}>
+              <FiMoreHorizontal className="text-gray-500" />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border">
+                <button
+                  onClick={() => {
+                    setEditingComment(comment.id);
+                    setEditContent(comment.content);
+                    setMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                    deleteComment(postId, comment.id);
+                    setMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <div className="flex gap-4 mt-2">
         <button

@@ -2,7 +2,7 @@ import axios from "axios";
 import { useFormik } from "formik";
 import { useNavigate, Link } from "react-router-dom";
 import { object, string } from "yup";
-import {jwtDecode} from "jwt-decode"; // إضافة jwt-decode
+import { jwtDecode } from "jwt-decode"; 
 import studentLearningImg from "../../src/assets/images/Learning-rafiki.svg";
 import logo from "../assets/images/logo.png";
 
@@ -37,15 +37,20 @@ export default function Login() {
 
         if (response.data.success) {
           const { accessToken } = response.data.data;
-          // استخراج الـ username من الـ JWT token
+          
           const decoded = jwtDecode(accessToken);
           const username =
             decoded[
               "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
             ] || "Anonymous";
-          // تخزين الـ accessToken والـ username في localStorage
+          const role =
+            decoded[
+              "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+            ] || "User"; 
+          
           localStorage.setItem("userToken", accessToken);
           localStorage.setItem("username", username);
+          localStorage.setItem("userRole", role); // تخزين الـ role
           navigate("/home");
         } else {
           formik.setErrors({ email: "Login failed: " + response.data.message });
