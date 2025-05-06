@@ -2,17 +2,20 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import evolvifyLogo from "../assets/images/logo.png";
 import { useNavigate } from "react-router-dom";
-//import clickSoundFile from "../assets/sounds/button-click(chosic.com).mp3";
+// import clickSoundFile from "../assets/sounds/button-click(chosic.com).mp3";
 
 function Quiz() {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false); // State لحالة الـ quiz المكتمل
+  const [errorMessage, setErrorMessage] = useState(null); // State لرسايل الإيرور
   const navigate = useNavigate();
 
   const accessToken = localStorage.getItem("userToken");
   const username = localStorage.getItem("username") || "Anonymous";
 
+  // Axios interceptor for Authorization header
   axios.interceptors.request.use(
     (config) => {
       if (accessToken) {
@@ -28,51 +31,91 @@ function Quiz() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch(
+        const response = await axios.get(
           "https://evolvify.runasp.net/api/Assessments/questions"
         );
-        const data = await response.json();
-        console.log("API Data:", data);
-        setQuestions(data.data);
+        console.log("Questions API Data:", response.data);
+
+        // Check if the assessment is already completed
+        if (
+          !response.data.success &&
+          response.data.message === "Assessment already completed."
+        ) {
+          setIsCompleted(true); // فعّل حالة الـ quiz المكتمل
+          return;
+        }
+
+        // Validate that response.data.data is an array
+        if (Array.isArray(response.data.data)) {
+          setQuestions(response.data.data);
+        } else {
+          console.error(
+            "Expected an array in response.data.data, got:",
+            response.data.data
+          );
+          setQuestions([]);
+          setErrorMessage("Invalid questions data received.");
+        }
       } catch (error) {
         console.error("Error fetching questions:", error);
+        setQuestions([]);
+        setErrorMessage("An error occurred while fetching questions.");
       }
     };
 
     fetchQuestions();
   }, []);
 
+  const handleViewResults = async () => {
+    try {
+      const resultResponse = await axios.get(
+        "https://evolvify.runasp.net/api/Assessments/Result"
+      );
+      console.log("Results API Data:", resultResponse.data);
+
+      if (resultResponse.data.success && resultResponse.data.data) {
+        // انقل اليوزر لصفحة الـ results مع الداتا
+        navigate("/result", { state: { scores: resultResponse.data.data } });
+      } else {
+        setErrorMessage("No results available. Please contact support.");
+      }
+    } catch (resultError) {
+      console.error("Error fetching results:", resultError);
+      setErrorMessage("Failed to fetch results. Please try again later.");
+    }
+  };
+
   const handleAnswerSelection = (selectedChoice) => {
-    clickSound.play();
+    // clickSound.play();
     setAnswers((prevAnswers) => ({
       ...prevAnswers,
-      [currentQuestion]: selectedChoice.toUpperCase(), // Convert to uppercase (A, B, C, D)
+      [currentQuestion]: selectedChoice.toUpperCase(),
     }));
   };
 
   const handleNext = () => {
     if (currentQuestion < questions.length - 1) {
-      clickSound.play();
+      // clickSound.play();
       setCurrentQuestion((prevQuestion) => prevQuestion + 1);
     }
   };
 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
-      clickSound.play();
+      // clickSound.play();
       setCurrentQuestion((prevQuestion) => prevQuestion - 1);
     }
   };
 
   const handleFinish = async () => {
-    clickSound.play();
+    // clickSound.play();
 
     if (Object.keys(answers).length !== questions.length) {
       console.error("Not all questions have been answered.");
+      setErrorMessage("Please answer all questions before submitting.");
       return;
     }
 
-    // Create object to store answers in the desired format
     const skills = {
       interview: {},
       communication: {},
@@ -81,7 +124,6 @@ function Quiz() {
       teamwork: {},
     };
 
-    // Define the skill categories and their question ranges
     const skillNames = [
       "interview",
       "communication",
@@ -90,13 +132,12 @@ function Quiz() {
       "teamwork",
     ];
 
-    // Assign answers to each skill category
     skillNames.forEach((skillName, skillIndex) => {
-      const start = skillIndex * 6; // Start index for the skill's questions
+      const start = skillIndex * 6;
       for (let i = 0; i < 6; i++) {
-        const questionId = `Q${i + 1}`; // Question ID (Q1 to Q6)
-        const answerIndex = start + i; // Corresponding answer index
-        skills[skillName][questionId] = answers[answerIndex] || null; // Assign answer (A, B, C, D)
+        const questionId = `Q${i + 1}`;
+        const answerIndex = start + i;
+        skills[skillName][questionId] = answers[answerIndex] || null;
       }
     });
 
@@ -105,29 +146,23 @@ function Quiz() {
       JSON.stringify(skills, null, 2)
     );
 
-    // Send the answers to the API
     try {
-      const response = await fetch(
-        "https://evolvify.runasp.net/api/Assessments/submit-answers", // Updated endpoint
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(skills),
-        }
+      const response = await axios.post(
+        "https://evolvify.runasp.net/api/Assessments/submit-answers",
+        skills
       );
 
-      const result = await response.json();
-      console.log("API result:", result);
+      console.log("Submit API result:", response.data);
 
-      if (response.ok) {
-        navigate("/result", { state: { scores: result.data } });
+      if (response.data.success) {
+        navigate("/result", { state: { scores: response.data.data } });
       } else {
-        console.error("Error submitting answers:", result);
+        console.error("Error submitting answers:", response.data);
+        setErrorMessage("Failed to submit answers. Please try again.");
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error submitting answers:", error);
+      setErrorMessage("An error occurred while submitting answers.");
     }
   };
 
@@ -135,11 +170,85 @@ function Quiz() {
   const progress =
     questions.length > 0 ? ((currentQuestion + 1) / questions.length) * 100 : 0;
 
-  if (!questions.length) {
+  // إذا الـ quiz مكتمل
+  if (isCompleted) {
     return (
-      <div className="flex justify-center items-center h-screen bg-[#233A66] text-white text-2xl">
-        Loading questions...
-      </div>
+      <section className="min-h-screen w-full bg-[#233A66] flex flex-col">
+        <div className="bg-white p-4 border-b flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <img
+              src={evolvifyLogo}
+              alt="Evolvify_Logo"
+              className="h-14 w-40 mr-4"
+            />
+          </div>
+          <span className="text-xl text-[#233A66]">Hi, {username}</span>
+        </div>
+        <div className="max-w-xl w-full text-center mx-auto p-3 sm:p-6">
+          <h1 className="text-white font-semibold text-3xl sm:text-4xl py-6">
+            Assessment Completed
+          </h1>
+          <div className="card bg-white shadow-md rounded-lg p-6 flex flex-col gap-5">
+            <p className="text-lg text-[#233A66] font-semibold">
+              You have already completed this assessment.
+            </p>
+            <p className="text-md text-[#233A66]">
+              Click below to view your results.
+            </p>
+            <button
+              onClick={handleViewResults}
+              className="px-6 py-2 bg-[linear-gradient(to_right,#67B4FF,#1E3A5F)] text-white rounded-full hover:bg-[linear-gradient(to_right,#5AA0E6,#17304D)] transition-all duration-300 ease-in-out active:scale-95"
+            >
+              View Results
+            </button>
+            {errorMessage && (
+              <p className="text-red-500 text-md">{errorMessage}</p>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // إذا فيه رسالة إيرور
+  if (errorMessage) {
+    return (
+      <section className="min-h-screen w-full bg-[#233A66] flex flex-col">
+        <div className="bg-white p-4 border-b flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <img
+              src={evolvifyLogo}
+              alt="Evolvify_Logo"
+              className="h-14 w-40 mr-4"
+            />
+          </div>
+          <span className="text-xl text-[#233A66]">Hi, {username}</span>
+        </div>
+        <div className="flex justify-center items-center h-screen bg-[#233A66] text-white text-2xl">
+          {errorMessage}
+        </div>
+      </section>
+    );
+  }
+
+  // إذا مفيش أسئلة
+  if (!questions || !questions.length) {
+    return (
+      <section className="min-h-screen w-full bg-[#233A66] flex flex-col">
+        <div className="bg-white p-4 border-b flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <img
+              src={evolvifyLogo}
+              alt="Evolvify_Logo"
+              className="h-14 w-40 mr-4"
+            />
+          </div>
+          <span className="text-xl text-[#233A66]">Hi, {username}</span>
+        </div>
+        <div className="flex justify-center items-center h-screen bg-[#233A66] text-white text-2xl">
+          Loading questions...
+        </div>
+      </section>
     );
   }
 
@@ -193,8 +302,8 @@ function Quiz() {
 
           {/* Options */}
           <div className="space-y-5">
-            {questions[currentQuestion]?.choices &&
-              Object.entries(questions[currentQuestion]?.choices).map(
+            {questions[currentQuestion]?.choices ? (
+              Object.entries(questions[currentQuestion].choices).map(
                 ([key, option], index) => (
                   <div
                     key={index}
@@ -208,7 +317,12 @@ function Quiz() {
                     {option}
                   </div>
                 )
-              )}
+              )
+            ) : (
+              <p className="text-red-500">
+                No choices available for this question.
+              </p>
+            )}
           </div>
 
           {/* Navigation Buttons */}
