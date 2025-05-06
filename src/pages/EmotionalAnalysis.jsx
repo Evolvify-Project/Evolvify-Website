@@ -396,7 +396,7 @@ const EmotionAnalysisPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 text-gray-800 font-sans">
+    <div className="min-h-screen bg-white p-6 text-gray-800 font-sans">
       <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 text-indigo-800">
         <FontAwesomeIcon icon={faBrain} className="text-purple-600 mr-2" />
         Emotion Analysis
@@ -566,7 +566,7 @@ const EmotionAnalysisPage = () => {
           </div>
         </div>
       </div>
-      <div className="mt-6 bg-white p-4 rounded-xl shadow-md border border-gray-100">
+      <div className="mt-6 bg-slate-50 p-4 rounded-xl shadow-xl border border-gray-100">
         <h2 className="text-lg font-semibold mb-2">Emotional Trends</h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={emotionData}>
