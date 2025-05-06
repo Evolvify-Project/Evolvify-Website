@@ -118,6 +118,7 @@ function App() {
           errorElement: <ErrorPage />,
         },
         { path: "*", element: <NotFound />, errorElement: <ErrorPage /> },
+        { path: "dashboard", element: <Dashboard /> },
       ],
     },
   ]);
