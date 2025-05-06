@@ -13,6 +13,7 @@ import Chatbot from "./pages/Chatbot"
 import Quiz from "./pages/Quiz";
 import ResultPage from "./pages/Result";
 import RecommendedPlan from "./pages/RecommendedPlan";
+import Dashboard from "./pages/Dashboard";
 import Payment from "./pages/payment";
 import {
   createBrowserRouter,
@@ -42,6 +43,7 @@ function App() {
         { path: "chatbot", element: <Chatbot /> },
         { path: "quiz", element: <Quiz /> },
         { path: "result", element: <ResultPage /> },
+        { path: "dashboard", element: <Dashboard /> },
         { path: "recommended-plan", element: <RecommendedPlan /> },
         { path: "payment", element: <Payment /> },
         { path: "*", element: <NotFound /> },

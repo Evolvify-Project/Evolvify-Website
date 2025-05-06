@@ -390,7 +390,7 @@ function Community() {
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="w-64 p-6 bg-white shadow-lg">
-        <div className="space-y-8">
+        <div className="space-y-8 sticky top-6">
           <div className="space-y-2">
             {["My posts", "Saved"].map((tab) => (
               <button

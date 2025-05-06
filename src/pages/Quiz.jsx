@@ -23,7 +23,7 @@ function Quiz() {
     (error) => Promise.reject(error)
   );
 
- // const clickSound = new Audio(clickSoundFile);
+  // const clickSound = new Audio(clickSoundFile);
 
   useEffect(() => {
     const fetchQuestions = async () => {

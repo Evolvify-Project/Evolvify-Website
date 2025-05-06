@@ -6,16 +6,18 @@ import { Outlet, useLocation } from "react-router-dom";
 export default function Layout() {
   const location = useLocation();
 
-  const hideNavbarFooter = [
-    "/login",
-    "/signup",
-    "/forget-password",
-    "/Chatbot",
-    "/Quiz",
-    "/result",
-    "/recommended-plan",
-    "/payment",
-  ].some((route) => location.pathname.startsWith(route));
+  const hideNavbarFooter =
+    [
+      "/login",
+      "/signup",
+      "/forget-password",
+      "/Chatbot",
+      "/Quiz",
+      "/result",
+      "/recommended-plan",
+      "/payment",
+    ].some((route) => location.pathname.startsWith(route)) ||
+    /^\/skills\/[^/]+\/assessment$/.test(location.pathname); ;
 
   return (
     <>
