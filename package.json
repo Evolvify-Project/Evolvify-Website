@@ -12,11 +12,12 @@
   "dependencies": {
     "@fontsource-variable/lexend": "^5.2.6",
     "@fortawesome/fontawesome-free": "^6.7.2",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@headlessui/react": "^2.2.2",
     "aos": "^2.3.4",
-    "axios": "^1.8.4",
+    "axios": "^1.9.0",
     "canvas-confetti": "^1.9.3",
     "fontawesome": "^5.6.3",
     "formik": "^2.4.6",
@@ -29,7 +30,8 @@
     "react-fontawesome": "^1.7.1",
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.5.0",
+    "react-router-dom": "^7.5.3",
+    "react-webcam": "^7.2.0",
     "recharts": "^2.15.3",
     "remark-gfm": "^4.0.1",
     "yup": "^1.6.1"
