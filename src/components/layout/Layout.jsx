@@ -11,11 +11,12 @@ export default function Layout() {
       "/login",
       "/signup",
       "/forget-password",
-      "/Chatbot",
+      "/chatbot",
       "/Quiz",
       "/result",
       "/recommended-plan",
       "/payment",
+      "/dashboard",
     ].some((route) => location.pathname.startsWith(route)) ||
     /^\/skills\/[^/]+\/assessment$/.test(location.pathname); ;
 

@@ -1,12 +1,14 @@
 import logoLighte from "../assets/images/light-logo.png";
 import placeholderImg from "../assets/images/placeholder-vector.jpg";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const sliderRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
+  const [name, setName] = useState("Mira Ali"); // قيمة افتراضية
+  const [email, setEmail] = useState("Miraali@gmail.com"); // قيمة افتراضية
   const cards = [
     { id: 1, skill: "Presentation", progress: 75 },
     { id: 2, skill: "Time Management", progress: 60 },
@@ -14,6 +16,20 @@ const Dashboard = () => {
     { id: 4, skill: "Interview", progress: 90 },
     { id: 5, skill: "Communication", progress: 70 },
   ];
+
+  // جلب الاسم والإيميل من localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        const parsedData = JSON.parse(userData);
+        setName(parsedData.name || "Mira Ali"); // لو مافيش اسم، نستخدم القيمة الافتراضية
+        setEmail(parsedData.email || "Miraali@gmail.com"); // لو مافيش إيميل، نستخدم القيمة الافتراضية
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
+      }
+    }
+  }, []);
 
   const handleNext = () => {
     if (currentIndex < cards.length - 3) {
@@ -65,15 +81,19 @@ const Dashboard = () => {
       {/* Sidebar */}
       <aside className="w-full md:w-72 bg-[#233A66] text-white p-5 flex-col items-center md:min-h-screen hidden md:flex">
         <div className="flex items-center mb-5">
-          <img src={logoLighte} alt="Evolvify Logo" className="mr-2" />
+          <img
+            src={logoLighte}
+            alt="Evolvify Logo"
+            className="mr-2 w-48 h-20"
+          />
         </div>
         <div className="ProfileImg text-center mb-5">
           <img
             src={placeholderImg}
             alt="User Profile"
-            className="rounded-full mb-4 w-32 h-32 mx-auto"
+            className="rounded-full mb-4 w-28 h-28 mx-auto"
           />
-          <h3 className="text-lg font-semibold mb-2">Mira Ali</h3>
+          <h3 className="text-lg font-semibold mb-2">{name}</h3>
           <button
             onClick={handleEditProfile}
             className="flex justify-between items-center bg-blue-500 text-white py-2 px-2 rounded-md w-40 mt-4 my-10"
@@ -84,7 +104,7 @@ const Dashboard = () => {
           <div className="UserInfo">
             <p className="flex items-center my-2">
               <i className="fa-solid fa-envelope mr-2 text-white"></i>
-              Miraali@gmail.com
+              {email}
             </p>
             <p className="flex items-center">
               <i className="fa-solid fa-phone mr-2 text-white"></i>
@@ -104,7 +124,7 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="flex-1 p-5">
         <h1 className="text-xl md:text-2xl text-[#233A66] font-bold text-center mb-5">
-          Welcome, Mira
+          Welcome, {name}
         </h1>
 
         {/* Course Progress */}
@@ -123,10 +143,10 @@ const Dashboard = () => {
                   <div
                     key={card.id}
                     className="bg-gray-100 p-4 rounded-lg flex-shrink-0 snap-center"
-                    style={{ width: "30%", minWidth: "200px" }} // عرض أصغر
+                    style={{ width: "30%", minWidth: "200px", height: "200px" }}
                   >
-                    <p className="font-medium">{card.skill}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-medium text-center">{card.skill}</p>
+                    <p className="text-sm text-gray-600 text-center">
                       Improving your {card.skill.toLowerCase()} skills can help
                       you perform better.
                     </p>
@@ -136,7 +156,9 @@ const Dashboard = () => {
                         style={{ width: `${card.progress}%` }}
                       ></div>
                     </div>
-                    <p className="text-sm mt-1">{card.progress}% completed</p>
+                    <p className="text-sm mt-1 text-center">
+                      {card.progress}% completed
+                    </p>
                   </div>
                 ))}
               </div>
@@ -252,11 +274,11 @@ const Dashboard = () => {
           </div>
 
           {/* Assessment Result */}
-          <div className="flex-1 mt-5 sm:mt-0 sm:ml-10">
-            <h2 className="text-lg md:text-xl font-semibold mb-3">
+          <div className="flex-1 mt-5 rounded-md mx-0 sm:mt-0 sm:ml-10">
+            <h2 className="text-lg md:text-xl font-semibold ml-48 mb-3">
               Assessment Result
             </h2>
-            <div>
+            <div className="ml-48">
               <p className="my-1">
                 Presentation <span className="text-green-600">Advanced</span>
               </p>
