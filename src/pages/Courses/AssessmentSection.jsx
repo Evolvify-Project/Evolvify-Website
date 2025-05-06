@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { skills } from "./Data/SkillData";
+import confetti from "canvas-confetti";
 
 export default function AssessmentSection() {
   const { id } = useParams();
@@ -8,156 +9,287 @@ export default function AssessmentSection() {
 
   if (!skill) {
     return (
-      <div className="p-6 text-4xl font-bold text-red-600">
+      <div className="p-48 text-center text-5xl font-bold text-red-600">
         Skill not found!
       </div>
     );
   }
 
-  const [progress, setProgress] = useState(66);
-  const [question, setQuestion] = useState("");
-  const [questions, setQuestions] = useState([]);
-  const [isEditing, setIsEditing] = useState(null);
+  const initialQuestions = [
+    {
+      questionText: "What is communication?",
+      choices: {
+        A: "Talking only",
+        B: "Listening only",
+        C: "Exchange of information",
+        D: "Ignoring others",
+      },
+      correctAnswer: "C",
+    },
+    {
+      questionText: "Which one improves communication?",
+      choices: {
+        A: "Interrupting",
+        B: "Active listening",
+        C: "Speaking louder",
+        D: "Avoiding eye contact",
+      },
+      correctAnswer: "B",
+    },
+    {
+      questionText: "Non-verbal communication includes?",
+      choices: {
+        A: "Emails",
+        B: "Phone calls",
+        C: "Body language",
+        D: "Books",
+      },
+      correctAnswer: "C",
+    },
+    {
+      questionText: "What is the key to effective communication?",
+      choices: {
+        A: "Assumptions",
+        B: "Clarity",
+        C: "Noise",
+        D: "Guessing",
+      },
+      correctAnswer: "B",
+    },
+    {
+      questionText: "What is active listening?",
+      choices: {
+        A: "Only hearing",
+        B: "Hearing and understanding",
+        C: "Ignoring the speaker",
+        D: "Multitasking while listening",
+      },
+      correctAnswer: "B",
+    },
+    {
+      questionText: "Which of these is an example of non-verbal communication?",
+      choices: {
+        A: "Writing an email",
+        B: "Making eye contact",
+        C: "Speaking loudly",
+        D: "Sending a text message",
+      },
+      correctAnswer: "B",
+    },
+    {
+      questionText: "Which of the following is NOT a communication barrier?",
+      choices: {
+        A: "Noise",
+        B: "Language differences",
+        C: "Active listening",
+        D: "Distractions",
+      },
+      correctAnswer: "C",
+    },
+  ];
 
-  const handleAdd = () => {
-    if (!question.trim()) return;
-    if (typeof isEditing === "number") {
-      const updated = [...questions];
-      updated[isEditing] = question;
-      setQuestions(updated);
-      setIsEditing(null);
-    } else {
-      setQuestions([...questions, question]);
-    }
-    setQuestion("");
+  const [questions] = useState(initialQuestions);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [progress, setProgress] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    const calcProgress = ((currentQuestion + 1) / questions.length) * 100;
+    setProgress(Math.round(calcProgress));
+  }, [currentQuestion, questions.length]);
+
+  const handleAnswerSelection = (key) => {
+    setAnswers({
+      ...answers,
+      [currentQuestion]: key,
+    });
   };
 
-  return (
-    <section className="AssessmentSection py-12">
-      <div className="container mx-auto p-6 bg-white py-6 rounded-lg shadow-md">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#233A66]">{skill.title}</h1>
-          <p className="text-sm text-gray-600">Beginner level assessment</p>
+  const handleNext = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    }
+  };
 
-          <div className="relative w-full h-2 bg-gray-200 rounded-full mt-2">
-            <div
-              className="absolute top-0 left-0 h-2 bg-lime-500 rounded-full"
-              style={{ width: `${progress}%` }}
-            ></div>
-            <div
-              className="absolute top-0 h-2 w-6 bg-lime-500 rounded-full"
-              style={{ left: `calc(${progress}% - 12px)` }}
-            >
-              <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-sm text-lime-500 font-semibold">
-                {progress}%
-              </span>
-            </div>
-          </div>
+  const handlePrevious = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+    }
+  };
+
+  const handleFinish = () => {
+    let calculatedScore = 0;
+
+    questions.forEach((question, index) => {
+      if (answers[index] === question.correctAnswer) {
+        calculatedScore += 1;
+      }
+    });
+
+    const scorePercentage = (calculatedScore / questions.length) * 100;
+    setScore(Math.round(scorePercentage));
+    setShowResult(true);
+  };
+
+  const handleContinue = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+  };
+
+  const getResultIcon = () => {
+    if (score >= 75) {
+      return <span className="text-4xl text-blue-500">🥳</span>;
+    } else if (score >= 51) {
+      return <i className="fas fa-meh text-yellow-500 text-4xl"></i>;
+    } else {
+      return <i className="fas fa-frown text-red-500 text-4xl"></i>;
+    }
+  };
+
+  { /* Add fireworks */ }
+  useEffect(() => {
+    if (showResult && score >= 75 && score <= 100) {
+      const duration = 15 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+      const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+      const interval = setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        });
+      }, 250);
+    }
+  }, [showResult, score]);
+
+  return (
+    <section className="AssessmentSection">
+      <div className="mx-auto min-h-screen p-6 bg-[#233A66] py-6 shadow-md">
+        <div className="mb-6 text-center">
+          <h1 className="text-3xl font-bold text-white">{skill.title}</h1>
+          <p className="text-md text-gray-200">Beginner level assessment</p>
         </div>
 
-        <div className="SectionQuestion bg-slate-50 p-6 rounded-lg shadow-md mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">
-            Question 4
-          </h2>
+        <div className="max-w-xl w-full text-center mx-auto p-3 sm:p-6 mt-16 relative z-10">
+          {showResult ? (
+            <div className="card bg-white shadow-md rounded-lg p-6 flex flex-col items-center gap-5">
+              <div className="mt-4">{getResultIcon()}</div>
+              <h2 className="text-2xl font-semibold text-[#1E3A5F]">
+                Assessment completed!!
+              </h2>
+              <div className="flex justify-between items-center w-full max-w-xs border border-gray-300 rounded-lg p-2">
+                <span className="text-lg font-medium text-[#1E3A5F]">
+                  Score
+                </span>
+                <span className="text-lg font-semibold text-[#67B4fF]">
+                  {score}%
+                </span>
+              </div>
 
-          <div className="border-t border-gray-400 pt-4">
-            <div className="mb-4">
-              {questions.map((q, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-2 mb-2 shadow-sm"
-                >
-                  {isEditing === i ? (
-                    <input
-                      value={question}
-                      onChange={(e) => setQuestion(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                      className="w-full mr-4 border-b border-gray-300 focus:outline-none"
-                    />
-                  ) : (
-                    <p className="text-gray-800">{q}</p>
-                  )}
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setIsEditing(i);
-                        setQuestion(q);
-                      }}
-                      className="text-blue-500 hover:text-blue-700"
-                      title="Edit"
-                    >
-                      <i class="fa-solid fa-pen"></i>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        const newQs = [...questions];
-                        newQs.splice(i, 1);
-                        setQuestions(newQs);
-                        if (isEditing === i) {
-                          setIsEditing(null);
-                          setQuestion("");
-                        }
-                      }}
-                      className="text-red-500 hover:text-red-700"
-                      title="Delete"
-                    >
-                      <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Add your question here"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-full focus:outline-none"
-              />
               <button
-                onClick={handleAdd}
-                className="p-2 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition"
+                onClick={handleContinue}
+                className="mt-4 px-8 py-2 bg-[linear-gradient(to_right,#67B4FF,#1E3A5F)] text-white rounded-full transition-all duration-300"
               >
-                <i className="fa-solid fa-plus"></i>
+                Continue
               </button>
             </div>
-          </div>
-        </div>
+          ) : (
+            <div className="card bg-white shadow-md rounded-lg p-6 flex flex-col gap-8">
+              <div className="relative w-full h-2 bg-gray-200 rounded-full mt-3">
+                <div
+                  className="absolute top-0 left-0 h-2 bg-lime-500 rounded-full"
+                  style={{ width: `${progress}%` }}
+                ></div>
+                <div
+                  className="absolute top-0 h-2 w-6 bg-lime-500 rounded-full"
+                  style={{ left: `calc(${progress}% - 12px)` }}
+                >
+                  <span className="absolute -top-5 left-1/2 transform -translate-x-1/2 text-sm text-lime-500 font-semibold">
+                    {progress}%
+                  </span>
+                </div>
+              </div>
 
-        <div className="flex justify-between items-center">
-          <button
-            className="flex items-center gap-2 px-4 py-2 bg-white text-blue-500 border border-blue-500 rounded-full hover:bg-blue-50 transition"
-            onClick={() => alert("Go to previous question")}
-          >
-            <span className="text-lg">
-              <i className="fa-solid fa-arrow-left-long"></i>
-            </span>{" "}
-            Previous
-          </button>
+              <div className="text-left border border-[#233A66] px-2 py-1 shadow-xl rounded-xl text-slate-700 mt-4 font-semibold inline-block">
+                Question {currentQuestion + 1} / {questions.length}
+              </div>
 
-          <div className="flex gap-3">
-            <button
-              className="flex items-center gap-2 px-4 py-2 bg-white text-blue-500 border border-blue-500 rounded-full hover:bg-blue-50 transition"
-              onClick={() => alert("Go to next question")}
-            >
-              Next{" "}
-              <span className="text-lg">
-                <i className="fa-solid fa-arrow-right-long"></i>
-              </span>
-            </button>
+              <h2 className="text-xl text-[#233A66] sm:text-2xl font-semibold">
+                {questions[currentQuestion]?.questionText}
+              </h2>
 
-            <button
-              className="px-4 py-2 bg-gradient-to-r bg-[#233A66] text-white rounded-full hover:bg-[#333A99] transition"
-              onClick={() => alert("Finish assessment")}
-            >
-              Finish
-            </button>
-          </div>
+              <div className="space-y-5">
+                {questions[currentQuestion]?.choices &&
+                  Object.entries(questions[currentQuestion]?.choices).map(
+                    ([key, option], index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleAnswerSelection(key)}
+                        className={`cursor-pointer p-2 rounded-md border transition-all duration-300 ${
+                          answers[currentQuestion] === key
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                      >
+                        {option}
+                      </div>
+                    )
+                  )}
+              </div>
+
+              <div className="flex flex-wrap justify-between items-center mt-6 gap-3">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentQuestion === 0}
+                  className="flex items-center px-4 py-2 bg-blue-50 text-[#1E3A5F] rounded-full hover:bg-gray-300 disabled:opacity-50"
+                >
+                  <i className="fas fa-chevron-left mr-2"></i>
+                  Previous
+                </button>
+
+                <button
+                  onClick={handleNext}
+                  disabled={
+                    currentQuestion === questions.length - 1 ||
+                    !answers[currentQuestion]
+                  }
+                  className="flex items-center px-4 py-2 bg-blue-50 text-[#1E3A5F] rounded-full hover:bg-gray-200 disabled:opacity-50"
+                >
+                  Next
+                  <i className="fas fa-chevron-right ml-2"></i>
+                </button>
+
+                <button
+                  onClick={handleFinish}
+                  disabled={Object.keys(answers).length !== questions.length}
+                  className={`px-6 py-2 text-white rounded-full transition-all duration-300 ${
+                    Object.keys(answers).length === questions.length
+                      ? "bg-[linear-gradient(to_right,#67B4FF,#1E3A5F)]"
+                      : "bg-gray-300"
+                  }`}
+                >
+                  Finish
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

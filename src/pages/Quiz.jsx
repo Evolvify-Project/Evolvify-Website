@@ -37,7 +37,10 @@ function Quiz() {
         console.log("Questions API Data:", response.data);
 
         // Check if the assessment is already completed
-        if (!response.data.success && response.data.message === "Assessment already completed.") {
+        if (
+          !response.data.success &&
+          response.data.message === "Assessment already completed."
+        ) {
           setIsCompleted(true); // فعّل حالة الـ quiz المكتمل
           return;
         }
@@ -46,7 +49,10 @@ function Quiz() {
         if (Array.isArray(response.data.data)) {
           setQuestions(response.data.data);
         } else {
-          console.error("Expected an array in response.data.data, got:", response.data.data);
+          console.error(
+            "Expected an array in response.data.data, got:",
+            response.data.data
+          );
           setQuestions([]);
           setErrorMessage("Invalid questions data received.");
         }
@@ -313,7 +319,9 @@ function Quiz() {
                 )
               )
             ) : (
-              <p className="text-red-500">No choices available for this question.</p>
+              <p className="text-red-500">
+                No choices available for this question.
+              </p>
             )}
           </div>
 
