@@ -1,5 +1,3 @@
-
-
 import Login from "./pages/Login";
 import Sign from "./pages/Signup";
 import ForgetPassword from "./pages/ForgetPassword/ForgetPassword";
@@ -39,7 +37,7 @@ const ErrorPage = ({ error }) => (
         {error?.message || "An unexpected error occurred."}
       </p>
       <button
-        onClick={() => (window.location.href = "/")}
+        onClick={() => (window.location.href = "/home")}
         className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
       >
         Go to Home
@@ -118,8 +116,12 @@ function App() {
           element: <Summary />,
           errorElement: <ErrorPage />,
         },
-        { path: "*", element: <NotFound />, errorElement: <ErrorPage /> },
-        { path: "dashboard", element: <Dashboard /> },
+        {
+          path: "dashboard",
+          element: <Dashboard />,
+          errorElement: <ErrorPage />,
+        },
+        { path: "*", element: <NotFound /> },
       ],
     },
   ]);
