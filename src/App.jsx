@@ -26,7 +26,7 @@ import {
 } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import { SiChatbot } from "react-icons/si";
-import { EmotionProvider } from "./pages/EmotionContext"; // عدّل المسار لأنه في src/pages/
+import { EmotionProvider } from "./pages/EmotionContext"; 
 
 // Error Boundary Component
 const ErrorPage = ({ error }) => (
@@ -65,27 +65,26 @@ function App() {
         },
         { path: "home", element: <Home />, errorElement: <ErrorPage /> },
         {
-          path: "courses",
-          element: <Courses />,
-          errorElement: <ErrorPage />,
-          children: [
-            {
-              path: ":id",
-              element: <SkillDetailsPage />,
-              errorElement: <ErrorPage />,
-            },
-            {
-              path: ":id/learning-unit",
-              element: <LearningUnitPage />,
-              errorElement: <ErrorPage />,
-            },
-            {
-              path: ":id/assessment",
-              element: <AssessmentSection />,
-              errorElement: <ErrorPage />,
-            },
-          ],
-        },
+  path: "courses",
+  element: <Courses />,
+  errorElement: <ErrorPage />,
+},
+{
+  path: "courses/:id",
+  element: <SkillDetailsPage />,
+  errorElement: <ErrorPage />,
+},
+{
+  path: "courses/:id/learning-unit",
+  element: <LearningUnitPage />,
+  errorElement: <ErrorPage />,
+},
+{
+  path: "courses/:id/assessment",
+  element: <AssessmentSection />,
+  errorElement: <ErrorPage />,
+},
+
         {
           path: "practice",
           element: <PremiumSection />,

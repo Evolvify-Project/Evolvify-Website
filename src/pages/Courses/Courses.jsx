@@ -89,8 +89,131 @@
 
 // export default CoursesPage;
 
+//
+
+// =================================
+
+
+// import { Outlet } from "react-router-dom"; 
+// import { useState, useEffect } from "react";
+// import { Link } from "react-router-dom";
+// import axios from "axios";
+// import SkillCard from "./SkillCard";
+// import studentLearningImg from "../../assets/images/Learning-rafiki.svg";
+
+// const CoursesPage = () => {
+//   const [skills, setSkills] = useState([]);
+//   const [selectedTopic, setSelectedTopic] = useState("");
+//   const [selectedLevel, setSelectedLevel] = useState("");
+
+//   useEffect(() => {
+//     const fetchSkills = async () => {
+//       try {
+//         const response = await axios.get("https://evolvify.runasp.net/api/Courses");
+//         setSkills(response.data.data);
+//       } catch (error) {
+//         console.error("Error fetching skills:", error);
+//       }
+//     };
+
+//     fetchSkills();
+//   }, []);
+
+//   const uniqueTopics = [...new Set(skills.map((s) => s.skill))];
+//   const uniqueLevels = [...new Set(skills.map((s) => s.level))];
+
+//   const filteredSkills = skills.filter((skill) => {
+//     const topicMatch = selectedTopic ? skill.skill.toLowerCase() === selectedTopic.toLowerCase() : true;
+//     const levelMatch = selectedLevel ? skill.level.toLowerCase() === selectedLevel.toLowerCase() : true;
+//     return topicMatch && levelMatch;
+//   });
+
+//   return (
+//     <section className="min-h-screen bg-white">
+//       {/* Header Section */}
+//       <div className="container mx-auto flex justify-between items-center">
+//         <div className="header px-28 py-4">
+//           <div className="flex flex-col gap-4 text-darkBlue">
+//             <h1 className="text-4xl font-bold">Our Courses</h1>
+//             <div className="flex items-center text-md">
+//               <Link to="/home" className="flex items-center cursor-pointer text-md">
+//                 <span>Home</span>
+//                 <p className="mx-2">
+//                   <i className="fa-solid fa-circle-arrow-right"></i>
+//                 </p>
+//               </Link>
+//               <span>Courses</span>
+//             </div>
+//           </div>
+//         </div>
+//         <img
+//           src={studentLearningImg}
+//           alt="Student studying"
+//           className="w-[450px] h-auto pr-14"
+//         />
+//       </div>
+
+//       {/* Filter Section */}
+//       <div className="filter-section text-center py-6">
+//         <p className="text-3xl font-bold text-darkBlue mb-6">
+//           Develop Your Soft Skills for Success!
+//         </p>
+
+//         <div className="flex justify-center items-center gap-4 flex-wrap">
+//           <div className="flex flex-col items-start">
+//             <label className="text-sm font-medium text-gray-600 mb-1">Topic</label>
+//             <select
+//               className="px-4 py-2 border rounded-lg bg-white"
+//               value={selectedTopic}
+//               onChange={(e) => setSelectedTopic(e.target.value)}
+//             >
+//               <option value="">All</option>
+//               {uniqueTopics.map((topic) => (
+//                 <option key={topic} value={topic}>
+//                   {topic}
+//                 </option>
+//               ))}
+//             </select>
+//           </div>
+
+//           <div className="flex flex-col items-start">
+//             <label className="text-sm font-medium text-gray-600 mb-1">Level</label>
+//             <select
+//               className="px-4 py-2 border rounded-lg bg-white"
+//               value={selectedLevel}
+//               onChange={(e) => setSelectedLevel(e.target.value)}
+//             >
+//               <option value="">All</option>
+//               {uniqueLevels.map((level) => (
+//                 <option key={level} value={level}>
+//                   {level}
+//                 </option>
+//               ))}
+//             </select>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Courses Grid */}
+//       <div className="cards grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto p-6">
+//         {filteredSkills.length === 0 ? (
+//           <p className="col-span-full text-center text-gray-500 text-lg">
+//             No courses match your filters.
+//           </p>
+//         ) : (
+//           filteredSkills.map((skill) => (
+//             <SkillCard key={skill.id} skill={skill} />
+//           ))
+//         )}
+//       </div>
+//     </section>
+//   );
+// };
+
+// export default CoursesPage;
+
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import axios from "axios";
 import SkillCard from "./SkillCard";
 import studentLearningImg from "../../assets/images/Learning-rafiki.svg";
@@ -104,7 +227,7 @@ const CoursesPage = () => {
     const fetchSkills = async () => {
       try {
         const response = await axios.get("https://evolvify.runasp.net/api/Courses");
-        setSkills(response.data.data); 
+        setSkills(response.data.data);
       } catch (error) {
         console.error("Error fetching skills:", error);
       }
@@ -181,9 +304,10 @@ const CoursesPage = () => {
           <SkillCard key={skill.id} skill={skill} />
         ))}
       </div>
+
+      <Outlet />
     </section>
   );
 };
 
 export default CoursesPage;
-
