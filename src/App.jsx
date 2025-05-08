@@ -17,13 +17,13 @@ import Dashboard from "./pages/Dashboard";
 import Payment from "./pages/payment";
 import EmotionAnalysis from "./pages/EmotionalAnalysis";
 import Summary from "./pages/Summary";
+import InterviewTest from "./pages/InterviewTest";
 import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
 } from "react-router-dom";
 import Layout from "./components/layout/Layout";
-import { SiChatbot } from "react-icons/si";
 import { EmotionProvider } from "./pages/EmotionContext"; 
 
 // Error Boundary Component
@@ -63,26 +63,25 @@ function App() {
         },
         { path: "home", element: <Home />, errorElement: <ErrorPage /> },
         {
-  path: "courses",
-  element: <Courses />,
-  errorElement: <ErrorPage />,
-},
-{
-  path: "courses/:id",
-  element: <SkillDetailsPage />,
-  errorElement: <ErrorPage />,
-},
-{
-  path: "courses/:id/learning-unit",
-  element: <LearningUnitPage />,
-  errorElement: <ErrorPage />,
-},
-{
-  path: "courses/:id/assessment",
-  element: <AssessmentSection />,
-  errorElement: <ErrorPage />,
-},
-
+          path: "courses",
+          element: <Courses />,
+          errorElement: <ErrorPage />,
+        },
+        {
+          path: "courses/:id",
+          element: <SkillDetailsPage />,
+          errorElement: <ErrorPage />,
+        },
+        {
+          path: "courses/:id/learning-unit",
+          element: <LearningUnitPage />,
+          errorElement: <ErrorPage />,
+        },
+        {
+          path: "courses/:id/assessment",
+          element: <AssessmentSection />,
+          errorElement: <ErrorPage />,
+        },
         {
           path: "practice",
           element: <PremiumSection />,
@@ -119,6 +118,11 @@ function App() {
         {
           path: "dashboard",
           element: <Dashboard />,
+          errorElement: <ErrorPage />,
+        },
+        {
+          path: "interview-test",
+          element: <InterviewTest />,
           errorElement: <ErrorPage />,
         },
         { path: "*", element: <NotFound /> },
