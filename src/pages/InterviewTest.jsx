@@ -145,8 +145,8 @@ const InterviewTestPage = () => {
         if (chunks.length > 0) {
           const blob = new Blob(chunks, { type: 'video/webm' });
           console.log('Recording blob size:', blob.size, 'bytes');
-          if (blob.size > 10 * 1024 * 1024) {
-            setError('Recorded video exceeds 10MB limit');
+          if (blob.size > 100 * 1024 * 1024) {
+            setError('Recorded video exceeds 100MB limit');
             stopCamera();
             return;
           }
@@ -353,8 +353,8 @@ const InterviewTestPage = () => {
   const handleVideoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        setError('Uploaded video exceeds 10MB limit');
+      if (file.size > 100 * 1024 * 1024) {
+        setError('Uploaded video exceeds 100MB limit');
         return;
       }
       const videoElement = document.createElement('video');
