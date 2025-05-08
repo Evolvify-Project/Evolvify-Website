@@ -10,11 +10,11 @@ const Dashboard = () => {
   const [name, setName] = useState("Mira Ali"); // قيمة افتراضية
   const [email, setEmail] = useState("Miraali@gmail.com"); // قيمة افتراضية
   const cards = [
-    { id: 1, skill: "Presentation", progress: 75 },
-    { id: 2, skill: "Time Management", progress: 60 },
-    { id: 3, skill: "Teamwork", progress: 80 },
-    { id: 4, skill: "Interview", progress: 90 },
-    { id: 5, skill: "Communication", progress: 70 },
+    { id: 1, skill: "Presentation skill", progress: 30 },
+    { id: 2, skill: "Time Management skill", progress: 60 },
+    { id: 3, skill: "Teamwork skill", progress: 100 },
+    { id: 4, skill: "Interview skill", progress: 90 },
+    { id: 5, skill: "Communication skill", progress: 70 },
   ];
 
   // جلب الاسم والإيميل من localStorage
@@ -76,6 +76,8 @@ const Dashboard = () => {
     navigate("/login");
   };
 
+  
+
   return (
     <section className="dashboard flex flex-col min-h-screen md:flex-row">
       {/* Sidebar */}
@@ -135,67 +137,76 @@ const Dashboard = () => {
           <div className="relative">
             <div
               ref={sliderRef}
-              className="Cards flex overflow-x-hidden scrollbar-hide snap-x w-full"
-              style={{ display: "flex", gap: "1rem" }}
+              className="Cards overflow-x-hidden scrollbar-hidden snap-x w-full flex justify-center"
             >
-              <div className="flex gap-5 pb-4">
-                {cards.map((card, index) => (
+              <div className="flex gap-4 pb-4">
+                {cards.slice(currentIndex, currentIndex + 3).map((card) => (
                   <div
                     key={card.id}
-                    className="bg-gray-100 p-4 rounded-lg flex-shrink-0 snap-center"
-                    style={{ width: "30%", minWidth: "200px", height: "200px" }}
+                    className="bg-gray-100 w-[310px] h-[210px] p-4 rounded-lg flex-shrink-0 snap-center shadow-md"
                   >
-                    <p className="font-medium text-center">{card.skill}</p>
-                    <p className="text-sm text-gray-600 text-center">
-                      Improving your {card.skill.toLowerCase()} skills can help
-                      you perform better.
+                    <p className="font-semibold text-[#233A66] text-center">
+                      {card.skill}
                     </p>
-                    <div className="w-full bg-gray-300 rounded h-2 mt-2">
+                    <p className="text-sm text-[#233A66] text-center mt-2">
+                      Improving your {card.skill.toLowerCase()} skills can help
+                      you perform better engage your audience, and leave a
+                      lasting impression.
+                    </p>
+                    <div className="relative w-full bg-gray-300 rounded-full h-3 mt-6 ">
                       <div
-                        className="bg-blue-500 h-full rounded"
+                        className="bg-[#64B5F6] h-full rounded-full"
                         style={{ width: `${card.progress}%` }}
                       ></div>
+                      <p
+                        className="text-sm absolute top-4 whitespace-nowrap text-center"
+                        style={{ left: card.progress }}
+                      >
+                        {card.progress}% completed
+                      </p>
                     </div>
-                    <p className="text-sm mt-1 text-center">
-                      {card.progress}% completed
-                    </p>
                   </div>
                 ))}
               </div>
             </div>
+
             {/* Navigation Buttons */}
             <button
               onClick={handlePrev}
-              className={`absolute left-1 sm:left-2 top-1/2 transform -translate-y-1/2 bg-gray-300 text-gray-800 p-2 rounded-full ${
+              className={`absolute w-12 h-12 left-1/2 transform -translate-x-1/2 top-1/2 -translate-y-1/2 bg-blue-400 text-white rounded-full ${
                 currentIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
               }`}
               disabled={currentIndex === 0}
+              style={{ left: "5%" }}
             >
               <i className="fa-solid fa-chevron-left"></i>
             </button>
             <button
               onClick={handleNext}
-              className={`absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-gray-100 text-gray-800 p-2 rounded-full ${
+              className={`absolute w-12 h-12 right-1/2 transform translate-x-1/2 top-1/2 -translate-y-1/2 bg-blue-400 text-white rounded-full ${
                 currentIndex >= cards.length - 3
                   ? "opacity-50 cursor-not-allowed"
                   : ""
               }`}
               disabled={currentIndex >= cards.length - 3}
+              style={{ right: "5%" }}
             >
               <i className="fa-solid fa-chevron-right"></i>
             </button>
           </div>
         </div>
 
+        <div className="border-2 border-[#64B5F6] w-[1000px] mx-auto rounded-lg my-10"></div>
+
         {/* User Progress and Assessment Result */}
         <div className="flex flex-col sm:flex-row gap-5 sm:gap-10 mb-0">
           {/* User Progress */}
           <div className="flex-1">
-            <h2 className="text-lg md:text-xl font-semibold mb-3">
+            <h2 className="text-lg md:text-xl text-[#233A66] font-semibold mb-3">
               User Progress
             </h2>
-            <div className="flex flex-wrap gap-5">
-              <div className="bg-gray-100 p-4 rounded-lg text-center flex-1 min-w-[200px] flex items-center justify-center h-40 sm:h-auto">
+            <div className="flex flex-row gap-5">
+              <div className="bg-white p-4 rounded-lg text-center flex-1 min-w-[200px] h-48 flex items-center justify-center shadow-md">
                 <div>
                   <p className="text-sm">Starting Level (Intermediate)</p>
                   <div className="relative h-24 w-24 mx-auto my-2">
@@ -220,7 +231,7 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-100 p-4 rounded-lg text-center flex-1 min-w-[200px] flex items-center justify-center h-40 sm:h-auto">
+              <div className="bg-white p-4 rounded-lg text-center flex-1 min-w-[200px] h-48 flex items-center justify-center shadow-md">
                 <div>
                   <p className="text-sm">Current Level (Advanced)</p>
                   <div className="relative h-24 w-24 mx-auto my-2">
@@ -245,7 +256,7 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-100 p-4 rounded-lg text-center flex-1 min-w-[200px] flex items-center justify-center h-40 sm:h-auto">
+              <div className="bg-white p-4 rounded-lg text-center flex-1 min-w-[200px] h-48 flex items-center justify-center shadow-md">
                 <div>
                   <p className="text-sm">Knowledge Gain</p>
                   <div className="relative h-24 w-24 mx-auto my-2">
@@ -274,27 +285,30 @@ const Dashboard = () => {
           </div>
 
           {/* Assessment Result */}
-          <div className="flex-1 mt-5 rounded-md mx-0 sm:mt-0 sm:ml-10">
-            <h2 className="text-lg md:text-xl font-semibold ml-48 mb-3">
-              Assessment Result
-            </h2>
-            <div className="ml-48">
-              <p className="my-1">
-                Presentation <span className="text-green-600">Advanced</span>
-              </p>
-              <p className="my-1">
-                Time Management <span className="text-gray-500">Beginner</span>
-              </p>
-              <p className="my-1">
-                Teamwork <span className="text-yellow-500">Intermediate</span>
-              </p>
-              <p className="my-1">
-                Interview <span className="text-green-600">Advanced</span>
-              </p>
-              <p className="my-1">
-                Communication{" "}
-                <span className="text-yellow-500">Intermediate</span>
-              </p>
+          <div className="flex-1 mt-5 sm:mt-0 sm:ml-10">
+            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+              <h2 className="text-lg md:text-xl font-semibold mb-3">
+                Assessment Result
+              </h2>
+              <div>
+                <p className="my-1">
+                  Presentation <span className="text-green-600">Advanced</span>
+                </p>
+                <p className="my-1">
+                  Time Management{" "}
+                  <span className="text-gray-500">Beginner</span>
+                </p>
+                <p className="my-1">
+                  Teamwork <span className="text-yellow-500">Intermediate</span>
+                </p>
+                <p className="my-1">
+                  Interview <span className="text-green-600">Advanced</span>
+                </p>
+                <p className="my-1">
+                  Communication{" "}
+                  <span className="text-yellow-500">Intermediate</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
