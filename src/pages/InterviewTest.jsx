@@ -38,7 +38,7 @@ const InterviewTestPage = () => {
 
   const showMessage = (text, type = 'info') => {
     setMessage({ text, type });
-    setTimeout(() => setMessage(null), 3000);
+    setTimeout(() => setMessage(null), 5000); // Increased to 5s for better visibility
   };
 
   const checkCameraPermission = async () => {
@@ -131,18 +131,22 @@ const InterviewTestPage = () => {
         if (e.data.size > 0) {
           console.log('Recording data available:', e.data.size, 'bytes');
           chunks.push(e.data);
+        } else {
+          console.log('No data available in this chunk');
         }
       };
 
       recorder.onstop = () => {
-        console.log('MediaRecorder stopped');
+        console.log('MediaRecorder stopped, processing recording...');
+        console.log('Total chunks recorded:', chunks.length);
         setRecording(false);
         setCountdown(null);
         setCurrentQuestion(0);
         setQuestionTimer(30);
         showMessage('Interview finished, analyzing...');
-        stopCamera();
+        
         if (chunks.length > 0) {
+          console.log('Creating blob from chunks...');
           const blob = new Blob(chunks, { type: 'video/webm' });
           console.log('Recording blob size:', blob.size, 'bytes');
           if (blob.size > 100 * 1024 * 1024) {
@@ -150,9 +154,18 @@ const InterviewTestPage = () => {
             stopCamera();
             return;
           }
+          if (blob.size === 0) {
+            setError('Recorded video is empty. Please try again.');
+            stopCamera();
+            return;
+          }
           setVideoDuration(interviewQuestions.length * 30); // Total duration = questions * 30s
+          console.log('Uploading video for analysis... Blob size:', blob.size);
           uploadVideo(blob);
           chunks.length = 0;
+        } else {
+          setError('No recording data available to analyze. Check microphone/camera permissions.');
+          stopCamera();
         }
       };
 
@@ -169,6 +182,7 @@ const InterviewTestPage = () => {
               if (c + 1 >= interviewQuestions.length) {
                 clearInterval(questionInterval);
                 if (recorder.state === 'recording') {
+                  console.log('All questions answered, stopping recorder...');
                   recorder.stop();
                 }
                 return c;
@@ -197,24 +211,34 @@ const InterviewTestPage = () => {
 
     if (!cameraActive && !recording) {
       console.log('Nothing to stop: Camera and recording are already off');
+      showMessage('Camera already stopped');
       return;
     }
 
     // Stop MediaRecorder if it exists and is recording
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      console.log('Stopping MediaRecorder...');
-      mediaRecorder.stop();
+    if (mediaRecorder) {
+      if (mediaRecorder.state === 'recording') {
+        console.log('Stopping MediaRecorder...');
+        mediaRecorder.stop();
+      } else {
+        console.log('MediaRecorder not recording, but stopping it anyway...');
+        mediaRecorder.stop();
+      }
       setMediaRecorder(null); // Clear the recorder
+    } else {
+      console.log('No MediaRecorder instance to stop');
     }
 
     // Stop camera stream if it exists
     if (cameraStream) {
       console.log('Stopping camera stream...');
       cameraStream.getTracks().forEach(track => {
-        console.log('Stopping track:', track);
+        console.log('Stopping track:', track.kind);
         track.stop();
       });
       setCameraStream(null);
+    } else {
+      console.log('No camera stream to stop');
     }
 
     // Reset video element
@@ -222,6 +246,8 @@ const InterviewTestPage = () => {
       console.log('Resetting video element...');
       videoRef.current.srcObject = null;
       videoRef.current.pause();
+    } else {
+      console.log('Video element not found during stop');
     }
 
     setCameraActive(false);
@@ -251,13 +277,19 @@ const InterviewTestPage = () => {
   const uploadVideo = async (videoBlob, retries = 3) => {
     setLoading(true);
     setError(null);
+    console.log('Starting video upload... Blob size:', videoBlob.size, 'bytes');
+    
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const formData = new FormData();
         formData.append('file', videoBlob, 'video.webm');
+        console.log('FormData prepared for attempt:', attempt);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        const timeoutId = setTimeout(() => {
+          console.log('Request timed out after 5 minutes');
+          controller.abort();
+        }, 300000); // 300,000ms = 5 minutes
 
         const response = await fetch('https://moodydev-EvolviSense.hf.space/analyze-video/', {
           method: 'POST',
@@ -266,25 +298,30 @@ const InterviewTestPage = () => {
         });
 
         clearTimeout(timeoutId);
+        console.log('API response received - Status:', response.status, 'Status Text:', response.statusText);
 
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
           const text = await response.text();
+          console.log('Non-JSON response received:', text.substring(0, 100));
           if (text.includes('Your space')) {
             if (attempt < retries) {
-              showMessage(`Space is sleeping, retrying... (${attempt}/${retries})`, 'warning');
+              showMessage(`Space is sleeping, retrying... (Attempt ${attempt}/${retries})`, 'warning');
+              console.log('Space is sleeping, waiting 5s before retry...');
               await new Promise(resolve => setTimeout(resolve, 5000));
               continue;
             } else {
-              throw new Error('Server is not ready. Please try again later.');
+              throw new Error('Server is not ready after maximum retries. Please try again later.');
             }
           }
           throw new Error('Invalid response from server: ' + text.slice(0, 100));
         }
 
         const data = await response.json();
+        console.log('API response data:', data);
         if (data.error) {
-          setError(data.error);
+          setError('API Error: ' + data.error);
+          console.log('API returned an error:', data.error);
           return;
         }
 
@@ -294,9 +331,11 @@ const InterviewTestPage = () => {
           anxiety: data.mental_health.anxiety || 0,
           confidence: data.mental_health.confidence || 0,
         };
+        console.log('New data point for emotionData:', newDataPoint);
 
-        setEmotionData((prevData) => {
+        setEmotionData(prevData => {
           const newData = [...prevData, newDataPoint].slice(-15);
+          console.log('Updated emotionData:', newData);
           return newData;
         });
 
@@ -307,13 +346,17 @@ const InterviewTestPage = () => {
         const peakStress = Math.max(...totalData.map(d => d.stress)) || 0;
         const emotionalStability = 100 - (avgStress + avgAnxiety) / 2;
 
-        setSummaryStats({
-          confidence: avgConfidence.toFixed(1),
-          anxiety: avgAnxiety.toFixed(1),
-          stress: avgStress.toFixed(1),
-          primaryEmotion: Object.keys(data.emotions).reduce((a, b) => data.emotions[a].length > data.emotions[b].length ? a : b, 'neutral'),
-          peakStress: peakStress.toFixed(1),
-          emotionalStability: emotionalStability.toFixed(1),
+        setSummaryStats(prevStats => {
+          const newStats = {
+            confidence: avgConfidence.toFixed(1),
+            anxiety: avgAnxiety.toFixed(1),
+            stress: avgStress.toFixed(1),
+            primaryEmotion: Object.keys(data.emotions).reduce((a, b) => data.emotions[a].length > data.emotions[b].length ? a : b, 'neutral'),
+            peakStress: peakStress.toFixed(1),
+            emotionalStability: emotionalStability.toFixed(1),
+          };
+          console.log('Updated summaryStats:', newStats);
+          return newStats;
         });
 
         // Process frame emotions for timeline
@@ -335,14 +378,16 @@ const InterviewTestPage = () => {
           });
         }
         setFrameEmotions(frameEmotionData);
+        console.log('Updated frameEmotions:', frameEmotionData);
 
-        showMessage('Analysis completed!', 'success');
+        showMessage('Analysis completed successfully!', 'success');
         return;
 
       } catch (err) {
+        console.error('Upload attempt', attempt, 'failed:', err.message);
         if (attempt === retries) {
-          setError('Failed to analyze video: ' + (err.name === 'AbortError' ? 'Request timed out' : err.message));
-          console.error('Upload Error:', err);
+          setError(`Failed to analyze video after ${retries} attempts: ${err.name === 'AbortError' ? 'Request timed out after 5 minutes' : err.message}. Please check your internet connection or try again later.`);
+          showMessage(`Upload failed: ${err.message}. Retrying didn't work.`, 'error');
         }
       } finally {
         setLoading(false);
@@ -473,6 +518,7 @@ const InterviewTestPage = () => {
             <div className={`p-2 border rounded-lg text-center ${
               message.type === 'success' ? 'bg-green-100 border-green-400 text-green-700' :
               message.type === 'warning' ? 'bg-yellow-100 border-yellow-400 text-yellow-700' :
+              message.type === 'error' ? 'bg-red-100 border-red-400 text-red-700' :
               'bg-blue-100 border-blue-400 text-blue-700'
             }`}>
               {message.text}
