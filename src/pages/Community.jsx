@@ -1,29 +1,33 @@
 import React, { useState, useEffect } from "react";
-import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark } from "react-icons/fa";
-import { MdOutlineAddComment } from "react-icons/md";
-import { FiTrash2, FiMoreHorizontal } from "react-icons/fi";
+import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark, FaComment } from "react-icons/fa";
+import { FiTrash2, FiMoreHorizontal, FiEdit2 } from "react-icons/fi";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import placeholderImg from "../assets/images/placeholder-vector.jpg";
+import { motion, AnimatePresence } from "framer-motion";
 
 const categories = [
-  "Presentation skill",
-  "Interview skill",
-  "Communication skill",
-  "Time management skill",
-  "Teamwork skill",
+  { name: "All Posts", icon: "🌐" },
+  { name: "Presentation skill", icon: "🎤" },
+  { name: "Interview skill", icon: "💼" },
+  { name: "Communication skill", icon: "🗣️" },
+  { name: "Time management skill", icon: "⏰" },
+  { name: "Teamwork skill", icon: "🤝" },
 ];
 
 const API_BASE_URL = "https://evolvify.runasp.net/api/Community";
 
 function Community() {
   const [activeTab, setActiveTab] = useState("My posts");
-  const [selectedCategory, setSelectedCategory] = useState("Communication skill");
+  const [selectedCategory, setSelectedCategory] = useState("All Posts");
   const [newPost, setNewPost] = useState("");
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
   const [newComment, setNewComment] = useState({});
   const [newReply, setNewReply] = useState({});
   const [showComments, setShowComments] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
   const accessToken = localStorage.getItem("userToken");
@@ -42,6 +46,7 @@ function Community() {
 
   const fetchPosts = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/Post`, {
         headers: { Accept: "*/*" },
       });
@@ -49,14 +54,16 @@ function Community() {
         ...post,
         liked: false,
         saved: false,
-        category: categories[Math.floor(Math.random() * categories.length)],
         comments: [],
         commentsCount: post.commentsCount || 0,
+        profileImage: post.profileImage || placeholderImg,
       }));
       setPosts(fetchedPosts);
     } catch (err) {
       setError("Failed to fetch posts");
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,10 +89,10 @@ function Community() {
           ...response.data.data,
           liked: false,
           saved: false,
-          category: selectedCategory,
           userName,
           comments: [],
           commentsCount: 0,
+          profileImage: response.data.data.profileImage || placeholderImg,
         },
         ...posts,
       ]);
@@ -94,7 +101,7 @@ function Community() {
       setError("Failed to add post");
       console.error("Add post error:", err.response?.data || err.message);
       if (err.response?.status === 401) {
-        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+        navigate("/login");
       }
     }
   };
@@ -130,7 +137,7 @@ function Community() {
       setError("Failed to toggle like");
       console.error("Toggle like error:", err.response?.data || err.message);
       if (err.response?.status === 401) {
-        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+        navigate("/login");
       }
     }
   };
@@ -158,7 +165,7 @@ function Community() {
       setError("Failed to delete post: " + (err.response?.data?.message || err.message));
       console.error("Delete post error:", err.response?.data || err.message);
       if (err.response?.status === 401) {
-        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+        navigate("/login");
       }
     }
   };
@@ -177,10 +184,12 @@ function Community() {
           return {
             ...comment,
             userName: comment.userName || userName,
+            profileImage: comment.profileImage || placeholderImg,
             replies:
               repliesResponse.data.data.map((reply) => ({
                 ...reply,
                 userName: reply.userName || userName,
+                profileImage: reply.profileImage || placeholderImg,
                 liked: false,
                 likesCount: reply.likesCount || 0,
               })) || [],
@@ -207,7 +216,7 @@ function Community() {
         err.response?.data || err.message
       );
       if (err.response?.status === 401) {
-        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+        navigate("/login");
       }
     }
   };
@@ -227,7 +236,7 @@ function Community() {
         err.response?.data || err.message
       );
       if (err.response?.status === 401) {
-        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+        navigate("/login");
       }
     }
   };
@@ -244,7 +253,7 @@ function Community() {
     } catch (err) {
       console.error("Failed to add reply:", err.response?.data || err.message);
       if (err.response?.status === 401) {
-        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+        navigate("/login");
       }
     }
   };
@@ -262,7 +271,7 @@ function Community() {
         err.response?.data || err.message
       );
       if (err.response?.status === 401) {
-        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+        navigate("/login");
       }
     }
   };
@@ -277,7 +286,7 @@ function Community() {
         err.response?.data || err.message
       );
       if (err.response?.status === 401) {
-        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+        navigate("/login");
       }
     }
   };
@@ -323,7 +332,7 @@ function Community() {
         err.response?.data || err.message
       );
       if (err.response?.status === 401) {
-        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+        navigate("/login");
       }
     }
   };
@@ -376,7 +385,7 @@ function Community() {
         err.response?.data || err.message
       );
       if (err.response?.status === 401) {
-        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+        navigate("/login");
       }
     }
   };
@@ -384,101 +393,186 @@ function Community() {
   const filteredPosts =
     activeTab === "Saved"
       ? posts.filter((post) => post.saved)
+      : selectedCategory === "All Posts"
+      ? posts
       : posts.filter((post) => post.category === selectedCategory);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 p-6 bg-white shadow-lg">
-        <div className="space-y-8 sticky top-6">
+      <motion.aside
+        initial={{ x: -100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className={`fixed inset-y-0 left-0 w-64 p-6 bg-white shadow-lg rounded-r-lg z-20 transform md:transform-none md:static md:w-64 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-300 md:translate-x-0`}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-gray-800">Community Hub</h2>
+          <button
+            className="md:hidden text-gray-600"
+            onClick={() => setSidebarOpen(false)}
+          >
+            ✕
+          </button>
+        </div>
+        <div className="space-y-8">
           <div className="space-y-2">
             {["My posts", "Saved"].map((tab) => (
-              <button
+              <motion.button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`w-full text-left py-2 px-4 rounded-lg ${
+                onClick={() => {
+                  setActiveTab(tab);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full text-left py-2 px-4 rounded-lg transition-colors duration-200 ${
                   activeTab === tab
                     ? "bg-blue-600 text-white"
-                    : "text-gray-700 hover:bg-gray-100"
+                    : "text-gray-700 hover:bg-blue-50"
                 } font-medium`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 {tab}
-              </button>
+              </motion.button>
             ))}
           </div>
           <div>
-            <h2 className="font-semibold text-lg mb-3">Categories</h2>
+            <h3 className="font-semibold text-lg mb-3 text-gray-800">Categories</h3>
             <ul className="space-y-2">
               {categories.map((cat) => (
-                <li
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`cursor-pointer py-2 px-4 rounded-lg ${
-                    selectedCategory === cat
-                      ? "bg-blue-100 text-blue-600"
+                <motion.li
+                  key={cat.name}
+                  onClick={() => {
+                    setSelectedCategory(cat.name);
+                    setSidebarOpen(false);
+                  }}
+                  className={`cursor-pointer py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2 ${
+                    selectedCategory === cat.name
+                      ? "bg-blue-100 text-blue-600 font-semibold"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  {cat}
-                </li>
+                  <span>{cat.icon}</span>
+                  <span>{cat.name}</span>
+                </motion.li>
               ))}
             </ul>
           </div>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6">
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <div className="mb-6">
+      <main className="flex-1 p-6 md:ml-64">
+        <button
+          className="md:hidden mb-4 px-4 py-2 bg-blue-600 text-white rounded-lg"
+          onClick={() => setSidebarOpen(true)}
+        >
+          ☰ Menu
+        </button>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-red-500 mb-4"
+          >
+            {error}
+          </motion.p>
+        )}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-6"
+        >
           <textarea
             placeholder="Share your thoughts..."
-            className="w-full p-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow duration-200 resize-none shadow-sm"
             rows="4"
             value={newPost}
             onChange={(e) => setNewPost(e.target.value)}
             disabled={!accessToken}
           />
-          <button
-            onClick={handleAddPost}
-            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            disabled={!accessToken}
-          >
-            Post
-          </button>
-        </div>
+          <div className="flex gap-2 mt-2">
+            <motion.button
+              onClick={handleAddPost}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50"
+              disabled={!accessToken || !newPost.trim()}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Post
+            </motion.button>
+            {newPost.trim() && (
+              <motion.button
+                onClick={() => setNewPost("")}
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Cancel
+              </motion.button>
+            )}
+          </div>
+        </motion.div>
 
         <div className="space-y-6">
-          {filteredPosts.length ? (
-            filteredPosts.map((post) => (
-              <Post
-                key={post.id}
-                post={post}
-                toggleLike={toggleLike}
-                toggleSave={toggleSave}
-                deletePost={deletePost}
-                fetchComments={fetchComments}
-                addComment={addComment}
-                addReply={addReply}
-                editComment={editComment}
-                deleteComment={deleteComment}
-                toggleCommentLike={toggleCommentLike}
-                toggleReplyLike={toggleReplyLike}
-                newComment={newComment}
-                setNewComment={setNewComment}
-                newReply={newReply}
-                setNewReply={setNewReply}
-                showComments={showComments}
-                setShowComments={setShowComments}
-                accessToken={accessToken}
-                setError={setError}
-                setPosts={setPosts}
-                userName={userName}
-                userRole={userRole}
-              />
-            ))
+          {loading ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex justify-center items-center h-64"
+            >
+              <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            </motion.div>
+          ) : filteredPosts.length ? (
+            <AnimatePresence>
+              {filteredPosts.map((post) => (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Post
+                    post={post}
+                    toggleLike={toggleLike}
+                    toggleSave={toggleSave}
+                    deletePost={deletePost}
+                    fetchComments={fetchComments}
+                    addComment={addComment}
+                    addReply={addReply}
+                    editComment={editComment}
+                    deleteComment={deleteComment}
+                    toggleCommentLike={toggleCommentLike}
+                    toggleReplyLike={toggleReplyLike}
+                    newComment={newComment}
+                    setNewComment={setNewComment}
+                    newReply={newReply}
+                    setNewReply={setNewReply}
+                    showComments={showComments}
+                    setShowComments={setShowComments}
+                    accessToken={accessToken}
+                    setError={setError}
+                    setPosts={setPosts}
+                    userName={userName}
+                    userRole={userRole}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           ) : (
-            <p className="text-gray-500 text-center">No posts available</p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-gray-500 text-center"
+            >
+              No posts available
+            </motion.p>
           )}
         </div>
       </main>
@@ -531,11 +625,10 @@ function Post({
     if (!editPostContent.trim()) return;
     try {
       const response = await axios.put(
-        `${API_BASE_URL}/Post/${post.id}`,
-        { content: editPostContent, userName },
-        { headers: { Accept: "*/*", "Content-Type": "application/json" } }
+        `${API_BASE_URL}/Post/${post.id}?Content=${encodeURIComponent(editPostContent)}`,
+        {},
+        { headers: { Accept: "*/*" } }
       );
-      console.log("Edit post response:", response.data);
       setPosts((prevPosts) =>
         prevPosts.map((p) =>
           p.id === post.id ? { ...p, content: editPostContent } : p
@@ -548,7 +641,7 @@ function Post({
         "Failed to edit post: " + (err.response?.data?.message || err.message)
       );
       if (err.response?.status === 401) {
-        navigate("/login"); // لوج أوت فقط لو الخطأ 401
+        navigate("/login");
       }
     }
   };
@@ -556,34 +649,48 @@ function Post({
   const canEditOrDeletePost = post.userName === userName || userRole === "Admin";
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <motion.div
+      className="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200"
+      whileHover={{ scale: 1.02 }}
+    >
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">👩‍🎓</span>
+          <img
+            src={post.profileImage}
+            alt={`${post.userName}'s profile`}
+            className="w-10 h-10 rounded-full object-cover"
+          />
           <div>
-            <h3 className="font-semibold">{post.userName}</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="font-semibold text-gray-800">{post.userName}</h3>
+            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
               {new Date(post.createdAt).toLocaleString()}
-            </p>
+            </span>
           </div>
         </div>
         {canEditOrDeletePost && (
           <div className="relative">
-            <button
+            <motion.button
               onClick={() => setMenuOpen(menuOpen === post.id ? null : post.id)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
             >
               <FiMoreHorizontal className="text-gray-500" />
-            </button>
+            </motion.button>
             {menuOpen === post.id && (
-              <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border z-10"
+              >
                 <button
                   onClick={() => {
                     setEditingPost(true);
                     setEditPostContent(post.content);
                     setMenuOpen(null);
                   }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
                 >
+                  <FiEdit2 className="text-gray-600" />
                   Edit
                 </button>
                 <button
@@ -591,11 +698,12 @@ function Post({
                     deletePost(post.id);
                     setMenuOpen(null);
                   }}
-                  className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
+                  className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 flex items-center gap-2"
                 >
+                  <FiTrash2 className="text-red-500" />
                   Delete
                 </button>
-              </div>
+              </motion.div>
             )}
           </div>
         )}
@@ -605,25 +713,29 @@ function Post({
           <textarea
             value={editPostContent}
             onChange={(e) => setEditPostContent(e.target.value)}
-            className="w-full p-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none shadow-sm"
             rows="4"
           />
           <div className="flex gap-2 mt-2">
-            <button
+            <motion.button
               onClick={handleEditPost}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               Save
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={() => {
                 setEditingPost(false);
                 setEditPostContent(post.content);
               }}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               Cancel
-            </button>
+            </motion.button>
           </div>
         </div>
       ) : (
@@ -632,27 +744,33 @@ function Post({
         </p>
       )}
       <div className="flex gap-6 mt-4 text-gray-600">
-        <button
+        <motion.button
           onClick={() => toggleLike(post.id)}
           className="flex items-center gap-1"
           disabled={!accessToken}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
         >
           {post.liked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
           <span>{post.likesCount}</span>
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={handleToggleComments}
           className="flex items-center gap-1"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
         >
-          <MdOutlineAddComment />
+          <FaComment />
           <span>{post.commentsCount}</span>
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={() => toggleSave(post.id)}
           className="flex items-center gap-1"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
         >
           {post.saved ? <FaBookmark /> : <FaRegBookmark />}
-        </button>
+        </motion.button>
       </div>
 
       {showComments[post.id] && (
@@ -678,25 +796,38 @@ function Post({
               userRole={userRole}
             />
           ))}
-          <div className="flex gap-2">
+          <div className="flex gap-2 mt-4">
             <input
               placeholder="Add a comment..."
               value={newComment[post.id] || ""}
               onChange={(e) =>
                 setNewComment({ ...newComment, [post.id]: e.target.value })
               }
-              className="flex-1 p-2 border rounded-lg"
+              className="flex-1 p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
             />
-            <button
+            <motion.button
               onClick={() => addComment(post.id)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+              disabled={!newComment[post.id]?.trim()}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               Comment
-            </button>
+            </motion.button>
+            {newComment[post.id]?.trim() && (
+              <motion.button
+                onClick={() => setNewComment({ ...newComment, [post.id]: "" })}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Cancel
+              </motion.button>
+            )}
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -720,67 +851,102 @@ function Comment({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
+  const [replyInputOpen, setReplyInputOpen] = useState(false);
 
   const handleToggleReplies = () => {
     setShowReplies(!showReplies);
+    if (!showReplies && !comment.replies?.length) {
+      fetchComments(postId); // Refresh replies if none exist
+    }
   };
 
   const canEditOrDeleteComment = comment.userName === userName || userRole === "Admin";
 
   return (
-    <div className="bg-gray-50 p-4 rounded-lg">
-      <div className="flex justify-between">
-        <div>
-          <p className="font-semibold">{comment.userName || "Anonymous"}</p>
-          {editingComment === comment.id ? (
-            <div className="mt-2">
-              <textarea
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                className="w-full p-2 border rounded-lg"
-              />
-              <div className="flex gap-2 mt-2">
-                <button
-                  onClick={() => {
-                    editComment(postId, comment.id, editContent);
-                    setEditingComment(null);
-                  }}
-                  className="text-blue-500"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => setEditingComment(null)}
-                  className="text-gray-500"
-                >
-                  Cancel
-                </button>
-              </div>
+    <motion.div
+      className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="flex justify-between items-start">
+        <div className="flex items-start gap-3">
+          <img
+            src={comment.profileImage}
+            alt={`${comment.userName}'s profile`}
+            className="w-8 h-8 rounded-full object-cover"
+          />
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-gray-800">{comment.userName || "Anonymous"}</p>
+              <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+                {new Date(comment.createdAt).toLocaleString()}
+              </span>
             </div>
-          ) : (
-            <p
-              className="text-gray-600 mt-1"
-              style={{ whiteSpace: "pre-wrap" }}
-            >
-              {comment.content}
-            </p>
-          )}
+            {editingComment === comment.id ? (
+              <div className="mt-2">
+                <textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                  rows="3"
+                />
+                <div className="flex gap-2 mt-2">
+                  <motion.button
+                    onClick={() => {
+                      editComment(postId, comment.id, editContent);
+                      setEditingComment(null);
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Save
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setEditingComment(null)}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Cancel
+                  </motion.button>
+                </div>
+              </div>
+            ) : (
+              <p
+                className="text-gray-600 mt-1"
+                style={{ whiteSpace: "pre-wrap" }}
+              >
+                {comment.content}
+              </p>
+            )}
+          </div>
         </div>
         {canEditOrDeleteComment && (
           <div className="relative">
-            <button onClick={() => setMenuOpen(!menuOpen)}>
+            <motion.button
+              onClick={() => setMenuOpen(!menuOpen)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
               <FiMoreHorizontal className="text-gray-500" />
-            </button>
+            </motion.button>
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border z-10"
+              >
                 <button
                   onClick={() => {
                     setEditingComment(comment.id);
                     setEditContent(comment.content);
                     setMenuOpen(false);
                   }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
                 >
+                  <FiEdit2 className="text-gray-600" />
                   Edit
                 </button>
                 <button
@@ -788,20 +954,23 @@ function Comment({
                     deleteComment(postId, comment.id);
                     setMenuOpen(false);
                   }}
-                  className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
+                  className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 flex items-center gap-2"
                 >
+                  <FiTrash2 className="text-red-500" />
                   Delete
                 </button>
-              </div>
+              </motion.div>
             )}
           </div>
         )}
       </div>
-      <div className="flex gap-4 mt-2">
-        <button
+      <div className="flex gap-4 mt-3">
+        <motion.button
           onClick={() => toggleCommentLike(comment.id, postId)}
-          className="flex items-center gap-1 text-gray-600"
+          className="flex items-center gap-1 text-gray-600 hover:text-red-500 transition-colors duration-200"
           disabled={!accessToken}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
         >
           {comment.liked ? (
             <FaHeart className="text-red-500" />
@@ -809,33 +978,97 @@ function Comment({
             <FaRegHeart />
           )}
           <span>{comment.likesCount}</span>
-        </button>
-        <button
-          onClick={handleToggleReplies}
-          className="flex items-center gap-1 text-gray-600"
+        </motion.button>
+        <motion.button
+          onClick={() => setReplyInputOpen(!replyInputOpen)}
+          className="flex items-center gap-1 text-gray-600 hover:text-blue-500 transition-colors duration-200"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
         >
-          <MdOutlineAddComment />
-          <span>{comment.repliesCount}</span>
-        </button>
+          <FaComment />
+          <span>Reply</span>
+        </motion.button>
       </div>
-      {showReplies && (
-        <div className="mt-3 space-y-3">
+      {replyInputOpen && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="mt-3 ml-11 flex gap-2"
+        >
+          <input
+            placeholder="Add a reply..."
+            value={newReply[comment.id] || ""}
+            onChange={(e) =>
+              setNewReply({ ...newReply, [comment.id]: e.target.value })
+            }
+            className="flex-1 p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+          />
+          <motion.button
+            onClick={() => {
+              addReply(postId, comment.id);
+              setReplyInputOpen(false);
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+            disabled={!newReply[comment.id]?.trim()}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Reply
+          </motion.button>
+          <motion.button
+            onClick={() => {
+              setReplyInputOpen(false);
+              setNewReply({ ...newReply, [comment.id]: "" });
+            }}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Cancel
+          </motion.button>
+        </motion.div>
+      )}
+      {(showReplies || comment.replies?.length > 0) && (
+        <div className="mt-4 space-y-3">
           {comment.replies?.map((reply) => (
-            <div key={reply.id} className="ml-6 bg-gray-100 p-3 rounded-lg">
-              <p className="font-semibold text-sm">
-                {reply.userName || "Anonymous"}
-              </p>
-              <p
-                className="text-gray-600 text-sm"
-                style={{ whiteSpace: "pre-wrap" }}
-              >
-                {reply.content}
-              </p>
+            <motion.div
+              key={reply.id}
+              className="ml-11 border-l-2 border-gray-200 pl-4 bg-gray-50 p-3 rounded-lg"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="flex items-start gap-3">
+                <img
+                  src={reply.profileImage}
+                  alt={`${reply.userName}'s profile`}
+                  className="w-6 h-6 rounded-full object-cover"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-sm text-gray-800">
+                      {reply.userName || "Anonymous"}
+                    </p>
+                    <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+                      {new Date(reply.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <p
+                    className="text-gray-600 text-sm mt-1"
+                    style={{ whiteSpace: "pre-wrap" }}
+                  >
+                    {reply.content}
+                  </p>
+                </div>
+              </div>
               <div className="flex gap-4 mt-2">
-                <button
+                <motion.button
                   onClick={() => toggleReplyLike(reply.id, postId, comment.id)}
-                  className="flex items-center gap-1 text-gray-600 text-sm"
+                  className="flex items-center gap-1 text-gray-600 text-sm hover:text-red-500 transition-colors duration-200"
                   disabled={!accessToken}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                 >
                   {reply.liked ? (
                     <FaHeart className="text-red-500" />
@@ -843,29 +1076,23 @@ function Comment({
                     <FaRegHeart />
                   )}
                   <span>{reply.likesCount}</span>
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           ))}
-          <div className="ml-6 flex gap-2">
-            <input
-              placeholder="Reply..."
-              value={newReply[comment.id] || ""}
-              onChange={(e) =>
-                setNewReply({ ...newReply, [comment.id]: e.target.value })
-              }
-              className="flex-1 p-2 border rounded-lg"
-            />
-            <button
-              onClick={() => addReply(postId, comment.id)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+          {comment.replies?.length > 0 && (
+            <motion.button
+              onClick={handleToggleReplies}
+              className="ml-11 text-blue-500 text-sm hover:underline"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Reply
-            </button>
-          </div>
+              {showReplies ? "Hide replies" : `Show ${comment.repliesCount} replies`}
+            </motion.button>
+          )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
