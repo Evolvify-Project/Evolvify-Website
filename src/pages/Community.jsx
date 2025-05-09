@@ -417,7 +417,7 @@ function Community() {
             ✕
           </button>
         </div>
-        <div className="space-y-8">
+        <div className="space-y-8 sticky top-5">
           <div className="space-y-2">
             {["My posts", "Saved"].map((tab) => (
               <motion.button
@@ -439,7 +439,9 @@ function Community() {
             ))}
           </div>
           <div>
-            <h3 className="font-semibold text-lg mb-3 text-gray-800">Categories</h3>
+            <h3 className="font-semibold text-lg mb-3 text-gray-800">
+              Categories
+            </h3>
             <ul className="space-y-2">
               {categories.map((cat) => (
                 <motion.li
