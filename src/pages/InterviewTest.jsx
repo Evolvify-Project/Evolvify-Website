@@ -20,8 +20,8 @@ import {
   faStop,
   faSync,
   faUpload,
-  faRedo,
   faVideo,
+  faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Sample interview questions
@@ -42,13 +42,12 @@ const interpolateFrameEmotions = (
   if (!frameEmotions || frameEmotions.length === 0) return [];
 
   const interpolatedData = [];
-  const totalPoints = Math.floor(videoDuration * pointsPerSecond); // Number of points we want
-  const step = videoDuration / (totalPoints - 1); // Time step between points
+  const totalPoints = Math.floor(videoDuration * pointsPerSecond);
+  const step = videoDuration / (totalPoints - 1);
 
   for (let i = 0; i < totalPoints; i++) {
     const targetTime = i * step;
 
-    // Find the two closest frames
     let prevFrame = frameEmotions[0];
     let nextFrame = frameEmotions[frameEmotions.length - 1];
     let found = false;
@@ -74,14 +73,12 @@ const interpolateFrameEmotions = (
       prevFrame = frameEmotions[frameEmotions.length - 1];
     }
 
-    // Linear interpolation for confidence
     const timeDiff = nextFrame.time - prevFrame.time;
     const weight = timeDiff > 0 ? (targetTime - prevFrame.time) / timeDiff : 0;
     const interpolatedConfidence =
       prevFrame.confidence +
       (nextFrame.confidence - prevFrame.confidence) * weight;
 
-    // Use the emotion from the closest frame
     const emotion =
       targetTime - prevFrame.time < nextFrame.time - targetTime
         ? prevFrame.emotion
@@ -109,7 +106,7 @@ const InterviewTestPage = () => {
   const [frameEmotions, setFrameEmotions] = useState([]);
   const [videoDuration, setVideoDuration] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [questionTimer, setQuestionTimer] = useState(30); // 30 seconds per question
+  const [questionTimer, setQuestionTimer] = useState(30);
   const [countdown, setCountdown] = useState(null);
   const [emotionData, setEmotionData] = useState([]);
   const [summaryStats, setSummaryStats] = useState({
@@ -459,7 +456,6 @@ const InterviewTestPage = () => {
           return;
         }
 
-        // Use frame_data from backend for emotionData
         const frameData = data.frame_data.map((frame) => ({
           time: frame.time,
           stress: frame.stress,
@@ -468,10 +464,8 @@ const InterviewTestPage = () => {
         }));
         setEmotionData(frameData);
 
-        // Update video duration
         setVideoDuration(data.video_duration);
 
-        // Update summary stats with final scores and peak
         setSummaryStats((prevStats) => ({
           ...prevStats,
           confidence: data.mental_health.confidence.toFixed(1),
@@ -489,7 +483,6 @@ const InterviewTestPage = () => {
           ).toFixed(1),
         }));
 
-        // Process frame emotions for timeline
         const emotions = data.emotions;
         const frameCount = Object.values(emotions).reduce(
           (sum, arr) => sum + arr.length,
@@ -632,93 +625,150 @@ const InterviewTestPage = () => {
     return null;
   };
 
-  // Interpolate frame emotions for more data points
   const interpolatedFrameEmotions = interpolateFrameEmotions(
     frameEmotions,
     videoDuration
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 text-gray-800 font-sans">
-      <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 text-indigo-800">
-        <FontAwesomeIcon icon={faBrain} className="text-purple-600 mr-2" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 text-gray-800 font-sans">
+      {message && (
+        <div
+          className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 ${
+            message.type === "success"
+              ? "bg-green-100 border-green-400 text-green-700"
+              : message.type === "warning"
+              ? "bg-yellow-100 border-yellow-400 text-yellow-700"
+              : message.type === "error"
+              ? "bg-red-100 border-red-400 text-red-700"
+              : "bg-blue-100 border-blue-400 text-blue-700"
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+      <h1 className="text-4xl md:text-5xl font-bold text-center mb-8 text-indigo-800 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+        <FontAwesomeIcon icon={faBrain} className="mr-3 text-purple-500" />
         Interview Test
       </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div className="relative w-full h-64 md:h-80 rounded-xl border-2 border-gray-200 overflow-hidden shadow-lg">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Video Section */}
+        <div className="lg:col-span-1">
+          <div className="relative w-full h-0 pb-[56.25%] rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl bg-white">
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover"
+              className="absolute top-0 left-0 w-full h-full object-cover rounded-2xl"
               style={{ display: cameraActive ? "block" : "none" }}
             />
             {!cameraActive && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-300">
-                <span className="text-gray-500">Camera Off</span>
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-2xl">
+                <span className="text-gray-500 text-lg">Camera Off</span>
               </div>
             )}
             {recording && countdown !== null && (
-              <div className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-2 flex items-center">
-                <FontAwesomeIcon
-                  icon={faVideo}
-                  className="mr-2 animate-pulse"
-                />
-                <span>Total: {countdown}s</span>
-              </div>
-            )}
-            {recording && (
-              <div className="absolute bottom-2 left-2 bg-blue-600 text-white rounded-lg p-2 w-full mx-2">
-                <p className="font-semibold">
-                  Question {currentQuestion + 1}:{" "}
-                  {interviewQuestions[currentQuestion]}
-                </p>
-                <p>Time left: {questionTimer}s</p>
+              <div className="absolute top-4 right-4 bg-red-600 text-white rounded-full p-2 flex items-center animate-pulse">
+                <FontAwesomeIcon icon={faVideo} className="mr-2" />
+                <span>{countdown}s</span>
               </div>
             )}
             {loading && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center flex-col">
-                <span className="text-white animate-pulse mb-2">
+              <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center flex-col rounded-2xl">
+                <span className="text-white text-lg animate-pulse mb-2">
                   {uploadStatus.message}
                 </span>
-                <div className="w-3/4 bg-gray-200 rounded-full h-2.5">
+                <div className="w-3/4 bg-gray-300 rounded-full h-2.5">
                   <div
-                    className="bg-blue-600 h-2.5 rounded-full"
+                    className="bg-blue-400 h-2.5 rounded-full transition-all duration-300"
                     style={{ width: `${uploadStatus.progress}%` }}
                   ></div>
                 </div>
               </div>
             )}
           </div>
-          <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+          {recording && (
+            <div className="relative mt-4 bg-white rounded-2xl p-4 shadow-lg border border-gray-100 transition-all duration-500 transform animate-fadeIn">
+              <div className="absolute top-0 left-0 w-full h-full p-4">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle
+                    cx="50%"
+                    cy="50%"
+                    r="45%"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="8"
+                  />
+                  <circle
+                    cx="50%"
+                    cy="50%"
+                    r="45%"
+                    fill="none"
+                    stroke="#3b82f6"
+                    strokeWidth="8"
+                    strokeDasharray="283"
+                    strokeDashoffset={283 - (questionTimer / 30) * 283}
+                    className="transition-all duration-1000 ease-linear"
+                  />
+                </svg>
+              </div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      className="mr-2 text-blue-500"
+                    />
+                    <h3 className="font-semibold text-lg text-gray-800">
+                      Question {currentQuestion + 1}/{interviewQuestions.length}
+                    </h3>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {questionTimer}s
+                  </span>
+                </div>
+                <p className="text-gray-700">{interviewQuestions[currentQuestion]}</p>
+                <div className="mt-3 w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 h-1.5 rounded-full transition-all duration-300"
+                    style={{
+                      width: `${
+                        ((currentQuestion + 1) / interviewQuestions.length) * 100
+                      }%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="flex justify-between mt-4 space-x-4">
             <button
               onClick={startInterview}
               disabled={cameraActive || loading || recording || isUploading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition duration-200 flex items-center justify-center"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
             >
               <FontAwesomeIcon icon={faPlay} className="mr-2" />
-              Start Interview
+              Start
             </button>
             <button
               onClick={stopCamera}
               disabled={!cameraActive && !recording}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400 transition duration-200 flex items-center justify-center"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
             >
               <FontAwesomeIcon icon={faStop} className="mr-2" />
-              Stop Interview
+              Stop
             </button>
             <button
               onClick={newSession}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 flex items-center justify-center"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-xl hover:from-green-600 hover:to-teal-700 transition-all duration-200 flex items-center justify-center"
             >
               <FontAwesomeIcon icon={faSync} className="mr-2" />
-              New Session
+              Reset
             </button>
-            <label className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200 flex items-center justify-center cursor-pointer">
+            <label className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-xl hover:from-purple-600 hover:to-violet-700 transition-all duration-200 flex items-center justify-center cursor-pointer">
               <FontAwesomeIcon icon={faUpload} className="mr-2" />
-              Upload Video
+              Upload
               <input
                 type="file"
                 accept="video/*"
@@ -728,229 +778,223 @@ const InterviewTestPage = () => {
               />
             </label>
           </div>
-          {message && (
-            <div
-              className={`p-2 border rounded-lg text-center ${
-                message.type === "success"
-                  ? "bg-green-100 border-green-400 text-green-700"
-                  : message.type === "warning"
-                  ? "bg-yellow-100 border-yellow-400 text-yellow-700"
-                  : message.type === "error"
-                  ? "bg-red-100 border-red-400 text-red-700"
-                  : "bg-blue-100 border-blue-400 text-blue-700"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
-          {error && (
-            <div className="p-2 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-              {error}
-            </div>
-          )}
         </div>
-        <div className="space-y-4">
-          <div className="p-4 bg-white rounded-xl shadow-md border border-gray-100">
-            <h2 className="text-lg font-semibold mb-2 flex items-center">
-              <FontAwesomeIcon
-                icon={faFaceSmile}
-                className="text-yellow-500 mr-2"
-              />
-              Interview Performance
+
+        {/* Performance Card */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <h2 className="text-xl font-semibold mb-4 flex items-center text-indigo-700">
+              <FontAwesomeIcon icon={faFaceSmile} className="mr-2 text-yellow-500" />
+              Performance
             </h2>
-            <p className="text-gray-600">
-              Primary Emotion:{" "}
-              <span className="text-indigo-600 font-medium">
-                {summaryStats.primaryEmotion}
-              </span>
-            </p>
-            <p className="text-gray-600">
-              Confidence:{" "}
-              <span className="text-indigo-600 font-medium">
-                {summaryStats.confidence}%
-              </span>
-            </p>
-            <p className="text-gray-600">
-              Emotional Stability:{" "}
-              <span className="text-indigo-600 font-medium">
-                {summaryStats.emotionalStability}%
-              </span>
-            </p>
-          </div>
-          <div className="p-4 bg-white rounded-xl shadow-md border border-gray-100">
-            <h2 className="text-lg font-semibold mb-2 flex items-center">
-              <FontAwesomeIcon
-                icon={faMicrophone}
-                className="text-green-500 mr-2"
-              />
-              Analysis Metrics
-            </h2>
-            <p className="text-gray-600">
-              Stress:{" "}
-              <span className="text-red-500 font-medium">
-                {summaryStats.stress}%
-              </span>
-            </p>
-            <p className="text-gray-600">
-              Anxiety:{" "}
-              <span className="text-purple-500 font-medium">
-                {summaryStats.anxiety}%
-              </span>
-            </p>
-            <p className="text-gray-600">
-              Peak Stress:{" "}
-              <span className="text-red-500 font-medium">
-                {summaryStats.peakStress}%
-              </span>
-            </p>
+            <div className="space-y-3 text-gray-600">
+              <p>
+                Primary Emotion:{" "}
+                <span className="text-indigo-600 font-medium">
+                  {summaryStats.primaryEmotion}
+                </span>
+              </p>
+              <p>
+                Confidence:{" "}
+                <span className="text-indigo-600 font-medium">
+                  {summaryStats.confidence}%
+                </span>
+              </p>
+              <p>
+                Emotional Stability:{" "}
+                <span className="text-indigo-600 font-medium">
+                  {summaryStats.emotionalStability}%
+                </span>
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="mt-6 bg-white p-4 rounded-xl shadow-md border border-gray-100">
-        <h2 className="text-lg font-semibold mb-2">Emotional Trends</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart
-            data={emotionData}
-            margin={{ top: 10, right: 30, left: 0, bottom: 10 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-            <XAxis
-              dataKey="time"
-              type="number"
-              domain={[0, videoDuration]}
-              tickCount={Math.ceil(videoDuration / 5) + 1}
-              interval={0}
-              label={{
-                value: "Time (seconds)",
-                position: "insideBottom",
-                offset: -5,
-              }}
-              stroke="#666"
-              tickFormatter={(value) => value.toFixed(1)}
-            />
-            <YAxis
-              domain={[0, 100]}
-              tickCount={11}
-              label={{ value: "Score (%)", angle: -90, position: "insideLeft" }}
-              stroke="#666"
-            />
-            <Tooltip content={<LineChartTooltip />} />
-            <Legend wrapperStyle={{ paddingTop: "10px" }} />
-            <Line
-              type="monotone"
-              dataKey="stress"
-              stroke="#ff4d4f"
-              name="Stress"
-              strokeWidth={3}
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="anxiety"
-              stroke="#b37feb"
-              name="Anxiety"
-              strokeWidth={3}
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="confidence"
-              stroke="#52c41a"
-              name="Confidence"
-              strokeWidth={3}
-              dot={false}
-            />
-            {summaryStats.peakStress && (
-              <Line
-                type="monotone"
-                data={[
-                  { time: 0, stress: summaryStats.peakStress },
-                  { time: videoDuration, stress: summaryStats.peakStress },
-                ]}
-                stroke="#ff0000"
-                name="Peak Stress"
-                strokeDasharray="5 5"
-                strokeWidth={2}
-                dot={false}
-              />
-            )}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-      {interpolatedFrameEmotions.length > 0 && (
-        <div className="mt-6 bg-white p-4 rounded-xl shadow-md border border-gray-100">
-          <h2 className="text-lg font-semibold mb-2">
-            Frame-by-Frame Emotions
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-              <XAxis
-                dataKey="time"
-                type="number"
-                name="Time (s)"
-                domain={[0, videoDuration]}
-                tickCount={Math.ceil(videoDuration / 5) + 1}
-                interval={0}
-                label={{
-                  value: "Time (seconds)",
-                  position: "insideBottom",
-                  offset: -5,
-                }}
-                stroke="#666"
-                tickFormatter={(value) => value.toFixed(1)}
-              />
-              <YAxis
-                dataKey="confidence"
-                name="Confidence"
-                domain={[0, 100]}
-                tickCount={11}
-                label={{
-                  value: "Confidence (%)",
-                  angle: -90,
-                  position: "insideLeft",
-                }}
-                stroke="#666"
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ paddingTop: "10px" }} />
-              {[
-                ...new Set(interpolatedFrameEmotions.map((d) => d.emotion)),
-              ].map((emotion, idx) => (
-                <Scatter
-                  key={emotion}
-                  name={emotion}
-                  data={interpolatedFrameEmotions.filter(
-                    (d) => d.emotion === emotion
-                  )}
-                  fill={
-                    [
-                      "#ff7300",
-                      "#00c49f",
-                      "#ffbb28",
-                      "#ff8042",
-                      "#8884d8",
-                      "#82ca9d",
-                      "#a4de6c",
-                    ][idx % 7]
-                  }
-                  shape={
-                    [
-                      "circle",
-                      "triangle",
-                      "square",
-                      "diamond",
-                      "star",
-                      "cross",
-                      "wye",
-                    ][idx % 7]
-                  }
+
+        {/* Metrics Card */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <h2 className="text-xl font-semibold mb-4 flex items-center text-green-700">
+              <FontAwesomeIcon icon={faMicrophone} className="mr-2 text-green-500" />
+              Metrics
+            </h2>
+            <div className="space-y-3 text-gray-600">
+              <p>
+                Stress:{" "}
+                <span className="text-red-500 font-medium">
+                  {summaryStats.stress}%
+                </span>
+              </p>
+              <p>
+                Anxiety:{" "}
+                <span className="text-purple-500 font-medium">
+                  {summaryStats.anxiety}%
+                </span>
+              </p>
+              <p>
+                Peak Stress:{" "}
+                <span className="text-red-500 font-medium">
+                  {summaryStats.peakStress}%
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Emotional Trends Chart */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              Emotional Trends
+            </h2>
+            <ResponsiveContainer width="100%" height={350}>
+              <LineChart
+                data={emotionData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 10 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis
+                  dataKey="time"
+                  type="number"
+                  domain={[0, videoDuration]}
+                  tickCount={Math.ceil(videoDuration / 5) + 1}
+                  interval={0}
+                  label={{
+                    value: "Time (seconds)",
+                    position: "insideBottom",
+                    offset: -5,
+                  }}
+                  stroke="#666"
+                  tickFormatter={(value) => value.toFixed(1)}
                 />
-              ))}
-            </ScatterChart>
-          </ResponsiveContainer>
+                <YAxis
+                  domain={[0, 100]}
+                  tickCount={11}
+                  label={{ value: "Score (%)", angle: -90, position: "insideLeft" }}
+                  stroke="#666"
+                />
+                <Tooltip content={<LineChartTooltip />} />
+                <Legend wrapperStyle={{ paddingTop: "10px" }} />
+                <Line
+                  type="monotone"
+                  dataKey="stress"
+                  stroke="#ff4d4f"
+                  name="Stress"
+                  strokeWidth={3}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="anxiety"
+                  stroke="#b37feb"
+                  name="Anxiety"
+                  strokeWidth={3}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="confidence"
+                  stroke="#52c41a"
+                  name="Confidence"
+                  strokeWidth={3}
+                  dot={false}
+                />
+                {summaryStats.peakStress && (
+                  <Line
+                    type="monotone"
+                    data={[
+                      { time: 0, stress: summaryStats.peakStress },
+                      { time: videoDuration, stress: summaryStats.peakStress },
+                    ]}
+                    stroke="#ff0000"
+                    name="Peak Stress"
+                    strokeDasharray="5 5"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                )}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      )}
+
+        {/* Frame-by-Frame Emotions Chart */}
+        {interpolatedFrameEmotions.length > 0 && (
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                Frame-by-Frame Emotions
+              </h2>
+              <ResponsiveContainer width="100%" height={350}>
+                <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis
+                    dataKey="time"
+                    type="number"
+                    name="Time (s)"
+                    domain={[0, videoDuration]}
+                    tickCount={Math.ceil(videoDuration / 5) + 1}
+                    interval={0}
+                    label={{
+                      value: "Time (seconds)",
+                      position: "insideBottom",
+                      offset: -5,
+                    }}
+                    stroke="#666"
+                    tickFormatter={(value) => value.toFixed(1)}
+                  />
+                  <YAxis
+                    dataKey="confidence"
+                    name="Confidence"
+                    domain={[0, 100]}
+                    tickCount={11}
+                    label={{
+                      value: "Confidence (%)",
+                      angle: -90,
+                      position: "insideLeft",
+                    }}
+                    stroke="#666"
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ paddingTop: "10px" }} />
+                  {[
+                    ...new Set(interpolatedFrameEmotions.map((d) => d.emotion)),
+                  ].map((emotion, idx) => (
+                    <Scatter
+                      key={emotion}
+                      name={emotion}
+                      data={interpolatedFrameEmotions.filter(
+                        (d) => d.emotion === emotion
+                      )}
+                      fill={
+                        [
+                          "#ff7300",
+                          "#00c49f",
+                          "#ffbb28",
+                          "#ff8042",
+                          "#8884d8",
+                          "#82ca9d",
+                          "#a4de6c",
+                        ][idx % 7]
+                      }
+                      shape={
+                        [
+                          "circle",
+                          "triangle",
+                          "square",
+                          "diamond",
+                          "star",
+                          "cross",
+                          "wye",
+                        ][idx % 7]
+                      }
+                    />
+                  ))}
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
