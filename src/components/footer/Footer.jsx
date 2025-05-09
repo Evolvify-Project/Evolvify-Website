@@ -12,13 +12,13 @@ export default function Footer() {
           <img src={lightLogo} alt="Evolvify Logo" className="w-40 mb-4 ml-0" />
           <div className="flex space-x-4 text-[#6EC1E4] text-2xl">
             <a href="https://facebook.com">
-              <i className="fa-brands fa-facebook"></i>
+              <i className="fa-brands fa-facebook hover:text-blue-400"></i>
             </a>
             <a href="https://instagram.com">
-              <i className="fa-brands fa-instagram"></i>
+              <i className="fa-brands fa-instagram hover:bg-gradient-to-r hover:from-insta-start hover:to-insta-end hover:text-transparent hover:bg-clip-text"></i>
             </a>
             <a href="https://twitter.com">
-              <i className="fa-brands fa-x-twitter"></i>
+              <i className="fa-brands fa-x-twitter hover:text-black"></i>
             </a>
           </div>
         </div>
@@ -26,18 +26,18 @@ export default function Footer() {
         {/* Quick Links */}
         <div>
           <h2 className="text-lg font-semibold mb-4">Quick Link</h2>
-          <ul className="space-y-2 text-sm ">
-            <li>
+          <ul className="space-y-2 text-sm">
+            <li className="hover:text-gray-300">
               <a href="/home">Home</a>
             </li>
-            <li>
+            <li className="hover:text-gray-300">
               <a href="/courses">Courses</a>
             </li>
-            <li>
-              <a href="#">About us</a>
+            <li className="hover:text-gray-300">
+              <a href="/dashboard">Dashboard</a>
             </li>
-            <li>
-              <a href="#">Contact us</a>
+            <li className="hover:text-gray-300">
+              <a href="/community">Community</a>
             </li>
           </ul>
         </div>

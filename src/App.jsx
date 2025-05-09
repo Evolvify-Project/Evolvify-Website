@@ -13,7 +13,7 @@ import Chatbot from "./pages/Chatbot";
 import Quiz from "./pages/Quiz";
 import ResultPage from "./pages/Result";
 import RecommendedPlan from "./pages/RecommendedPlan";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard/Dashboard";
 import Payment from "./pages/payment";
 import EmotionAnalysis from "./pages/EmotionalAnalysis";
 import Summary from "./pages/Summary";
