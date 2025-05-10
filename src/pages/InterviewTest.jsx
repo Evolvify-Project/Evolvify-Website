@@ -22,9 +22,9 @@ import {
   faUpload,
   faVideo,
   faQuestionCircle,
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 
-// Sample interview questions
 const interviewQuestions = [
   "Tell me about yourself.",
   "What are your strengths and weaknesses?",
@@ -33,13 +33,18 @@ const interviewQuestions = [
   "Where do you see yourself in 5 years?",
 ];
 
-// Function to interpolate frame emotions for more data points
 const interpolateFrameEmotions = (
   frameEmotions,
   videoDuration,
   pointsPerSecond = 10
 ) => {
-  if (!frameEmotions || frameEmotions.length === 0) return [];
+  if (
+    !frameEmotions ||
+    !Array.isArray(frameEmotions) ||
+    frameEmotions.length === 0
+  ) {
+    return [];
+  }
 
   const interpolatedData = [];
   const totalPoints = Math.floor(videoDuration * pointsPerSecond);
@@ -47,7 +52,6 @@ const interpolateFrameEmotions = (
 
   for (let i = 0; i < totalPoints; i++) {
     const targetTime = i * step;
-
     let prevFrame = frameEmotions[0];
     let nextFrame = frameEmotions[frameEmotions.length - 1];
     let found = false;
@@ -96,9 +100,13 @@ const interpolateFrameEmotions = (
 
 const InterviewTestPage = () => {
   const videoRef = useRef(null);
+  const reviewVideoRef = useRef(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
+  const [recordedVideoUrl, setRecordedVideoUrl] = useState(null);
+  const [recordedBlob, setRecordedBlob] = useState(null);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
   const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -167,9 +175,9 @@ const InterviewTestPage = () => {
   };
 
   const startInterview = async () => {
-    if (cameraActive || loading || recording || isUploading) {
+    if (cameraActive || loading || recording || isUploading || reviewing) {
       console.log(
-        "Cannot start: Camera active, loading, recording, or upload in progress"
+        "Cannot start: Camera active, loading, recording, upload, or review in progress"
       );
       return;
     }
@@ -207,7 +215,11 @@ const InterviewTestPage = () => {
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30 },
+        },
         audio: true,
       });
       console.log("Stream acquired:", stream);
@@ -227,10 +239,29 @@ const InterviewTestPage = () => {
         });
       };
 
+      // Try different MP4 MIME types
+      let mimeType = "video/mp4";
+      const mimeTypes = [
+        "video/mp4;codecs=h264,aac",
+        "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+        "video/mp4;codecs=vp9,opus",
+        "video/mp4;codecs=vp9",
+        "video/mp4",
+      ];
+
+      for (const type of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          mimeType = type;
+          console.log("Selected MIME type:", mimeType);
+          break;
+        }
+      }
+
+      console.log("Using MIME type:", mimeType);
+
       const recorder = new MediaRecorder(stream, {
-        mimeType: "video/webm;codecs=vp8,opus",
-        videoBitsPerSecond: 2500000,
-        audioBitsPerSecond: 128000,
+        mimeType: mimeType,
+        videoBitsPerSecond: 2500000, // 2.5 Mbps
       });
       setMediaRecorder(recorder);
       const chunks = [];
@@ -239,24 +270,35 @@ const InterviewTestPage = () => {
         if (e.data.size > 0) {
           console.log("Recording data available:", e.data.size, "bytes");
           chunks.push(e.data);
-        } else {
-          console.log("No data available in this chunk");
         }
       };
 
+      // Start recording with a smaller timeslice and request data more frequently
+      recorder.start(100);
+      console.log("MediaRecorder started with timeslice of 100ms");
+
+      // Request data more frequently
+      const dataInterval = setInterval(() => {
+        if (recorder.state === "recording") {
+          recorder.requestData();
+        }
+      }, 100);
+
+      // Define onstop handler before setting the interval
       recorder.onstop = () => {
         console.log("MediaRecorder stopped, processing recording...");
         console.log("Total chunks recorded:", chunks.length);
+        clearInterval(dataInterval);
         setRecording(false);
         setCountdown(null);
         setCurrentQuestion(0);
         setQuestionTimer(30);
-        showMessage("Interview finished, analyzing...");
 
         if (chunks.length > 0) {
           console.log("Creating blob from chunks...");
-          const blob = new Blob(chunks, { type: "video/webm;codecs=vp8,opus" });
+          const blob = new Blob(chunks, { type: mimeType });
           console.log("Recording blob size:", blob.size, "bytes");
+
           if (blob.size > 100 * 1024 * 1024) {
             setError("Recorded video exceeds 100MB limit");
             stopCamera();
@@ -267,20 +309,24 @@ const InterviewTestPage = () => {
             stopCamera();
             return;
           }
-          stream.getTracks().forEach((track) => track.stop());
-          console.log("Uploading video for analysis... Blob size:", blob.size);
-          uploadVideo(blob);
-          chunks.length = 0;
+
+          const videoUrl = URL.createObjectURL(blob);
+          setRecordedVideoUrl(videoUrl);
+          setRecordedBlob(blob);
+          setReviewing(true);
+          showMessage(
+            "Recording finished. Please review the video.",
+            "success"
+          );
         } else {
           setError(
             "No recording data available to analyze. Check microphone/camera permissions."
           );
+          stream.getTracks().forEach((track) => track.stop());
           stopCamera();
         }
       };
 
-      recorder.start(1000);
-      console.log("MediaRecorder started with timeslice of 1000ms");
       let totalTimeLeft = interviewQuestions.length * 30;
       setCountdown(totalTimeLeft);
 
@@ -362,7 +408,48 @@ const InterviewTestPage = () => {
     showMessage("Camera stopped");
   };
 
+  const cancelReview = () => {
+    if (recordedVideoUrl) {
+      URL.revokeObjectURL(recordedVideoUrl);
+    }
+    setRecordedVideoUrl(null);
+    setRecordedBlob(null);
+    setReviewing(false);
+    stopCamera();
+    showMessage("Review cancelled");
+  };
+
+  const submitVideo = async () => {
+    if (!recordedBlob) {
+      setError("No video to submit");
+      return;
+    }
+
+    setLoading(true);
+    setReviewing(false);
+
+    try {
+      console.log("Uploading video...");
+      await uploadVideo(recordedBlob);
+    } catch (err) {
+      setError("Failed to process video: " + err.message);
+    } finally {
+      if (recordedVideoUrl) {
+        URL.revokeObjectURL(recordedVideoUrl);
+      }
+      setRecordedVideoUrl(null);
+      setRecordedBlob(null);
+      setLoading(false);
+    }
+  };
+
   const newSession = () => {
+    if (recordedVideoUrl) {
+      URL.revokeObjectURL(recordedVideoUrl);
+    }
+    setRecordedVideoUrl(null);
+    setRecordedBlob(null);
+    setReviewing(false);
     stopCamera();
     setEmotionData([]);
     setFrameEmotions([]);
@@ -392,7 +479,9 @@ const InterviewTestPage = () => {
 
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
-        setUploadStatus({ message: "Uploading video...", progress: 10 });
+        setUploadStatus({ message: "Processing video...", progress: 10 });
+
+        setUploadStatus({ message: "Uploading video...", progress: 30 });
         const formData = new FormData();
         formData.append("file", videoBlob, "video.webm");
         console.log("FormData prepared for attempt:", attempt);
@@ -456,14 +545,57 @@ const InterviewTestPage = () => {
           return;
         }
 
-        const frameData = data.frame_data.map((frame) => ({
-          time: frame.time,
-          stress: frame.stress,
-          anxiety: frame.anxiety,
-          confidence: frame.confidence,
-        }));
-        setEmotionData(frameData);
+        // Process frame data with more granular time points
+        const frameData = data.frame_data.map((frame, index) => {
+          // Calculate time based on index and total duration
+          const time = (index / data.frame_data.length) * data.video_duration;
+          return {
+            time: parseFloat(time.toFixed(2)),
+            stress: frame.stress,
+            anxiety: frame.anxiety,
+            confidence: frame.confidence,
+          };
+        });
 
+        // Add intermediate points for smoother visualization
+        const interpolatedData = [];
+        for (let i = 0; i < frameData.length - 1; i++) {
+          interpolatedData.push(frameData[i]);
+
+          // Add intermediate point
+          if (i < frameData.length - 1) {
+            const nextFrame = frameData[i + 1];
+            const currentFrame = frameData[i];
+            const midTime = (currentFrame.time + nextFrame.time) / 2;
+
+            interpolatedData.push({
+              time: parseFloat(midTime.toFixed(2)),
+              stress: (currentFrame.stress + nextFrame.stress) / 2,
+              anxiety: (currentFrame.anxiety + nextFrame.anxiety) / 2,
+              confidence: (currentFrame.confidence + nextFrame.confidence) / 2,
+            });
+          }
+        }
+        // Add the last frame
+        if (frameData.length > 0) {
+          interpolatedData.push(frameData[frameData.length - 1]);
+        }
+
+        // Ensure the last data point is exactly at videoDuration
+        if (
+          interpolatedData.length === 0 ||
+          interpolatedData[interpolatedData.length - 1].time <
+            data.video_duration
+        ) {
+          const last =
+            interpolatedData[interpolatedData.length - 1] ||
+            frameData[frameData.length - 1];
+          interpolatedData.push({
+            ...last,
+            time: data.video_duration,
+          });
+        }
+        setEmotionData(interpolatedData);
         setVideoDuration(data.video_duration);
 
         setSummaryStats((prevStats) => ({
@@ -567,9 +699,12 @@ const InterviewTestPage = () => {
     }
     return () => {
       console.log("Component unmounting, cleaning up...");
+      if (recordedVideoUrl) {
+        URL.revokeObjectURL(recordedVideoUrl);
+      }
       stopCamera();
     };
-  }, []);
+  }, [recordedVideoUrl]);
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length && payload[0].payload) {
@@ -655,24 +790,35 @@ const InterviewTestPage = () => {
         {/* Video Section */}
         <div className="lg:col-span-1">
           <div className="relative w-full h-0 pb-[56.25%] rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl bg-white">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="absolute top-0 left-0 w-full h-full object-cover rounded-2xl"
-              style={{ display: cameraActive ? "block" : "none" }}
-            />
-            {!cameraActive && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-2xl">
-                <span className="text-gray-500 text-lg">Camera Off</span>
-              </div>
-            )}
-            {recording && countdown !== null && (
-              <div className="absolute top-4 right-4 bg-red-600 text-white rounded-full p-2 flex items-center animate-pulse">
-                <FontAwesomeIcon icon={faVideo} className="mr-2" />
-                <span>{countdown}s</span>
-              </div>
+            {reviewing ? (
+              <video
+                ref={reviewVideoRef}
+                src={recordedVideoUrl}
+                controls
+                className="absolute top-0 left-0 w-full h-full object-cover rounded-2xl"
+              />
+            ) : (
+              <>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="absolute top-0 left-0 w-full h-full object-cover rounded-2xl"
+                  style={{ display: cameraActive ? "block" : "none" }}
+                />
+                {!cameraActive && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-2xl">
+                    <span className="text-gray-500 text-lg">Camera Off</span>
+                  </div>
+                )}
+                {recording && countdown !== null && (
+                  <div className="absolute top-4 right-4 bg-red-600 text-white rounded-full p-2 flex items-center animate-pulse">
+                    <FontAwesomeIcon icon={faVideo} className="mr-2" />
+                    <span>{countdown}s</span>
+                  </div>
+                )}
+              </>
             )}
             {loading && (
               <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center flex-col rounded-2xl">
@@ -728,13 +874,16 @@ const InterviewTestPage = () => {
                     {questionTimer}s
                   </span>
                 </div>
-                <p className="text-gray-700">{interviewQuestions[currentQuestion]}</p>
+                <p className="text-gray-700">
+                  {interviewQuestions[currentQuestion]}
+                </p>
                 <div className="mt-3 w-full bg-gray-200 rounded-full h-1.5">
                   <div
                     className="bg-gradient-to-r from-blue-500 to-indigo-600 h-1.5 rounded-full transition-all duration-300"
                     style={{
                       width: `${
-                        ((currentQuestion + 1) / interviewQuestions.length) * 100
+                        ((currentQuestion + 1) / interviewQuestions.length) *
+                        100
                       }%`,
                     }}
                   ></div>
@@ -743,40 +892,62 @@ const InterviewTestPage = () => {
             </div>
           )}
           <div className="flex justify-between mt-4 space-x-4">
-            <button
-              onClick={startInterview}
-              disabled={cameraActive || loading || recording || isUploading}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
-            >
-              <FontAwesomeIcon icon={faPlay} className="mr-2" />
-              Start
-            </button>
-            <button
-              onClick={stopCamera}
-              disabled={!cameraActive && !recording}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
-            >
-              <FontAwesomeIcon icon={faStop} className="mr-2" />
-              Stop
-            </button>
-            <button
-              onClick={newSession}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-xl hover:from-green-600 hover:to-teal-700 transition-all duration-200 flex items-center justify-center"
-            >
-              <FontAwesomeIcon icon={faSync} className="mr-2" />
-              Reset
-            </button>
-            <label className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-xl hover:from-purple-600 hover:to-violet-700 transition-all duration-200 flex items-center justify-center cursor-pointer">
-              <FontAwesomeIcon icon={faUpload} className="mr-2" />
-              Upload
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleVideoUpload}
-                className="hidden"
-                disabled={isUploading}
-              />
-            </label>
+            {reviewing ? (
+              <>
+                <button
+                  onClick={submitVideo}
+                  disabled={loading || isUploading}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
+                >
+                  <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                  Submit
+                </button>
+                <button
+                  onClick={cancelReview}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-200 flex items-center justify-center"
+                >
+                  <FontAwesomeIcon icon={faStop} className="mr-2" />
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={startInterview}
+                  disabled={cameraActive || loading || recording || isUploading}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
+                >
+                  <FontAwesomeIcon icon={faPlay} className="mr-2" />
+                  Start
+                </button>
+                <button
+                  onClick={stopCamera}
+                  disabled={!cameraActive && !recording}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
+                >
+                  <FontAwesomeIcon icon={faStop} className="mr-2" />
+                  Stop
+                </button>
+                <button
+                  onClick={newSession}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-xl hover:from-green-600 hover:to-teal-700 transition-all duration-200 flex items-center justify-center"
+                >
+                  <FontAwesomeIcon icon={faSync} className="mr-2" />
+                  Reset
+                </button>
+                <label className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-xl hover:from-purple-600 hover:to-violet-700 transition-all duration-200 flex items-center justify-center cursor-pointer">
+                  <FontAwesomeIcon icon={faUpload} className="mr-2" />
+                  Upload
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    className="hidden"
+                    disabled={isUploading}
+                  />
+                </label>
+              </>
+            )}
           </div>
         </div>
 
@@ -784,7 +955,10 @@ const InterviewTestPage = () => {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-4 flex items-center text-indigo-700">
-              <FontAwesomeIcon icon={faFaceSmile} className="mr-2 text-yellow-500" />
+              <FontAwesomeIcon
+                icon={faFaceSmile}
+                className="mr-2 text-yellow-500"
+              />
               Performance
             </h2>
             <div className="space-y-3 text-gray-600">
@@ -814,7 +988,10 @@ const InterviewTestPage = () => {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-4 flex items-center text-green-700">
-              <FontAwesomeIcon icon={faMicrophone} className="mr-2 text-green-500" />
+              <FontAwesomeIcon
+                icon={faMicrophone}
+                className="mr-2 text-green-500"
+              />
               Metrics
             </h2>
             <div className="space-y-3 text-gray-600">
@@ -869,10 +1046,22 @@ const InterviewTestPage = () => {
                 <YAxis
                   domain={[0, 100]}
                   tickCount={11}
-                  label={{ value: "Score (%)", angle: -90, position: "insideLeft" }}
+                  label={{
+                    value: "Score (%)",
+                    angle: -90,
+                    position: "insideLeft",
+                  }}
                   stroke="#666"
                 />
-                <Tooltip content={<LineChartTooltip />} />
+                <Tooltip
+                  content={<LineChartTooltip />}
+                  cursor={{
+                    stroke: "#666",
+                    strokeWidth: 1,
+                    strokeDasharray: "3 3",
+                  }}
+                  isAnimationActive={false}
+                />
                 <Legend wrapperStyle={{ paddingTop: "10px" }} />
                 <Line
                   type="monotone"
@@ -881,6 +1070,8 @@ const InterviewTestPage = () => {
                   name="Stress"
                   strokeWidth={3}
                   dot={false}
+                  activeDot={{ r: 8 }}
+                  connectNulls={true}
                 />
                 <Line
                   type="monotone"
@@ -889,6 +1080,8 @@ const InterviewTestPage = () => {
                   name="Anxiety"
                   strokeWidth={3}
                   dot={false}
+                  activeDot={{ r: 8 }}
+                  connectNulls={true}
                 />
                 <Line
                   type="monotone"
@@ -897,6 +1090,8 @@ const InterviewTestPage = () => {
                   name="Confidence"
                   strokeWidth={3}
                   dot={false}
+                  activeDot={{ r: 8 }}
+                  connectNulls={true}
                 />
                 {summaryStats.peakStress && (
                   <Line
@@ -918,14 +1113,16 @@ const InterviewTestPage = () => {
         </div>
 
         {/* Frame-by-Frame Emotions Chart */}
-        {interpolatedFrameEmotions.length > 0 && (
+        {interpolatedFrameEmotions && interpolatedFrameEmotions.length > 0 && (
           <div className="lg:col-span-3">
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
               <h2 className="text-xl font-semibold mb-4 text-gray-800">
                 Frame-by-Frame Emotions
               </h2>
               <ResponsiveContainer width="100%" height={350}>
-                <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 10 }}>
+                <ScatterChart
+                  margin={{ top: 10, right: 30, left: 0, bottom: 10 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                   <XAxis
                     dataKey="time"

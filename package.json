@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ffmpeg/core": "^0.12.4",
+    "@ffmpeg/ffmpeg": "^0.12.7",
+    "@ffmpeg/util": "^0.12.1",
     "@fontsource-variable/lexend": "^5.2.6",
     "@fortawesome/fontawesome-free": "^6.7.2",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
@@ -19,6 +22,7 @@
     "aos": "^2.3.4",
     "axios": "^1.9.0",
     "canvas-confetti": "^1.9.3",
+    "ffmpeg": "^0.0.4",
     "fontawesome": "^5.6.3",
     "formik": "^2.4.6",
     "fortawesome": "^0.0.1-security",
