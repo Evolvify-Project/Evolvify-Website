@@ -7,12 +7,12 @@ import placeholderImg from "../assets/images/placeholder-vector.jpg";
 import { motion, AnimatePresence } from "framer-motion";
 
 const categories = [
-  { name: "All Posts", icon: "🌐" },
-  { name: "Presentation skill", icon: "🎤" },
-  { name: "Interview skill", icon: "💼" },
-  { name: "Communication skill", icon: "🗣️" },
-  { name: "Time management skill", icon: "⏰" },
-  { name: "Teamwork skill", icon: "🤝" },
+  { name: "All Posts" },
+  { name: "Presentation skill"},
+  { name: "Interview skill"},
+  { name: "Communication skill"},
+  { name: "Time management skill"},
+  { name: "Teamwork skill"},
 ];
 
 const API_BASE_URL = "https://evolvify.runasp.net/api/Community";
@@ -399,7 +399,6 @@ function Community() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
       <motion.aside
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -467,7 +466,6 @@ function Community() {
         </div>
       </motion.aside>
 
-      {/* Main Content */}
       <main className="flex-1 p-6 md:ml-64">
         <button
           className="md:hidden mb-4 px-4 py-2 bg-blue-600 text-white rounded-lg"
@@ -658,9 +656,10 @@ function Post({
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-3">
           <img
-            src={post.profileImage}
+            src={post.profileImage || placeholderImg}
             alt={`${post.userName}'s profile`}
             className="w-10 h-10 rounded-full object-cover"
+            onError={(e) => (e.target.src = placeholderImg)}
           />
           <div>
             <h3 className="font-semibold text-gray-800">{post.userName}</h3>
@@ -692,7 +691,7 @@ function Post({
                   }}
                   className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
                 >
-                  <FiEdit2 className="text-gray-600" />
+                  <FiEdit2 className="text-gray-500" />
                   Edit
                 </button>
                 <button
@@ -722,7 +721,7 @@ function Post({
             <motion.button
               onClick={handleEditPost}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05}}
               whileTap={{ scale: 0.95 }}
             >
               Save
@@ -733,7 +732,7 @@ function Post({
                 setEditPostContent(post.content);
               }}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05}}
               whileTap={{ scale: 0.95 }}
             >
               Cancel
@@ -874,9 +873,10 @@ function Comment({
       <div className="flex justify-between items-start">
         <div className="flex items-start gap-3">
           <img
-            src={comment.profileImage}
+            src={comment.profileImage || placeholderImg}
             alt={`${comment.userName}'s profile`}
             className="w-8 h-8 rounded-full object-cover"
+            onError={(e) => (e.target.src = placeholderImg)}
           />
           <div className="flex-1">
             <div className="flex items-center gap-2">
@@ -948,7 +948,7 @@ function Comment({
                   }}
                   className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
                 >
-                  <FiEdit2 className="text-gray-600" />
+                  <FiEdit2 className="text-gray-500" />
                   Edit
                 </button>
                 <button
@@ -984,7 +984,7 @@ function Comment({
         <motion.button
           onClick={() => setReplyInputOpen(!replyInputOpen)}
           className="flex items-center gap-1 text-gray-600 hover:text-blue-500 transition-colors duration-200"
-          whileHover={{ scale: 1.1 }}
+          whileHover={{ scale: 1.1}}
           whileTap={{ scale: 0.9 }}
         >
           <FaComment />
@@ -1043,9 +1043,10 @@ function Comment({
             >
               <div className="flex items-start gap-3">
                 <img
-                  src={reply.profileImage}
+                  src={reply.profileImage || placeholderImg}
                   alt={`${reply.userName}'s profile`}
                   className="w-6 h-6 rounded-full object-cover"
+                  onError={(e) => (e.target.src = placeholderImg)}
                 />
                 <div className="flex-1">
                   <div className="flex items-center gap-2">

@@ -370,7 +370,10 @@ const InterviewTestPage = () => {
 
     if (!cameraActive && !recording) {
       console.log("Nothing to stop: Camera and recording are already off");
-      showMessage("Camera already stopped");
+      // Only show the message if the camera was actually active
+      if (cameraActive || recording) {
+        showMessage("Camera stopped");
+      }
       return;
     }
 
@@ -789,13 +792,13 @@ const InterviewTestPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Video Section */}
         <div className="lg:col-span-1">
-          <div className="relative w-full h-0 pb-[56.25%] rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl bg-white">
+          <div className="relative w-full rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl bg-white">
             {reviewing ? (
               <video
                 ref={reviewVideoRef}
                 src={recordedVideoUrl}
                 controls
-                className="absolute top-0 left-0 w-full h-full object-cover rounded-2xl"
+                className="w-full h-[400px] object-cover rounded-2xl"
               />
             ) : (
               <>
@@ -804,11 +807,11 @@ const InterviewTestPage = () => {
                   autoPlay
                   playsInline
                   muted
-                  className="absolute top-0 left-0 w-full h-full object-cover rounded-2xl"
+                  className="w-full h-[400px] object-cover rounded-2xl"
                   style={{ display: cameraActive ? "block" : "none" }}
                 />
                 {!cameraActive && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-2xl">
+                  <div className="w-full h-[400px] flex items-center justify-center bg-gray-200 rounded-2xl">
                     <span className="text-gray-500 text-lg">Camera Off</span>
                   </div>
                 )}
@@ -835,59 +838,35 @@ const InterviewTestPage = () => {
             )}
           </div>
           {recording && (
-            <div className="relative mt-4 bg-white rounded-2xl p-4 shadow-lg border border-gray-100 transition-all duration-500 transform animate-fadeIn">
-              <div className="absolute top-0 left-0 w-full h-full p-4">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle
-                    cx="50%"
-                    cy="50%"
-                    r="45%"
-                    fill="none"
-                    stroke="#e5e7eb"
-                    strokeWidth="8"
+            <div className="mt-4 bg-white rounded-2xl p-4 shadow-lg border border-gray-100 transition-all duration-500 transform animate-fadeIn">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center">
+                  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    className="mr-2 text-blue-500"
                   />
-                  <circle
-                    cx="50%"
-                    cy="50%"
-                    r="45%"
-                    fill="none"
-                    stroke="#3b82f6"
-                    strokeWidth="8"
-                    strokeDasharray="283"
-                    strokeDashoffset={283 - (questionTimer / 30) * 283}
-                    className="transition-all duration-1000 ease-linear"
-                  />
-                </svg>
+                  <h3 className="font-semibold text-lg text-gray-800">
+                    Question {currentQuestion + 1}/{interviewQuestions.length}
+                  </h3>
+                </div>
+                <span className="text-sm text-gray-500">{questionTimer}s</span>
               </div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center">
-                    <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      className="mr-2 text-blue-500"
-                    />
-                    <h3 className="font-semibold text-lg text-gray-800">
-                      Question {currentQuestion + 1}/{interviewQuestions.length}
-                    </h3>
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    {questionTimer}s
-                  </span>
-                </div>
-                <p className="text-gray-700">
-                  {interviewQuestions[currentQuestion]}
-                </p>
-                <div className="mt-3 w-full bg-gray-200 rounded-full h-1.5">
-                  <div
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 h-1.5 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${
-                        ((currentQuestion + 1) / interviewQuestions.length) *
-                        100
-                      }%`,
-                    }}
-                  ></div>
-                </div>
+              <p className="text-gray-700">{interviewQuestions[currentQuestion]}</p>
+              <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-1000 ease-linear"
+                  style={{ width: `${(questionTimer / 30) * 100}%` }}
+                ></div>
+              </div>
+              <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                <div
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 h-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${
+                      ((currentQuestion + 1) / interviewQuestions.length) * 100
+                    }%`,
+                  }}
+                ></div>
               </div>
             </div>
           )}
