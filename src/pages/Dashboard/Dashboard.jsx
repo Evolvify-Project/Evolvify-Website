@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import UserProgressCard from "./UserProgressCard";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useMediaQuery } from "react-responsive"; // إضافة استيراد useMediaQuery
+import { useMediaQuery } from "react-responsive";
 
 const Dashboard = () => {
   const sliderRef = useRef(null);
@@ -17,7 +17,11 @@ const Dashboard = () => {
   const [assessmentError, setAssessmentError] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const isMobile = useMediaQuery({ maxWidth: 767 }); // تعريف isMobile باستخدام useMediaQuery
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+  const isTablet = useMediaQuery({ minWidth: 768, maxWidth: 1023 });
+  const isDesktop = useMediaQuery({ minWidth: 1024 });
+  const [isVisible, setIsVisible] = useState(true);
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
 
   const cards = [
     { id: 1, skill: "Presentation skill", progress: 30 },
@@ -27,16 +31,12 @@ const Dashboard = () => {
     { id: 5, skill: "Communication skill", progress: 70 },
   ];
 
-  // جلب الـ token من localStorage
   const token = localStorage.getItem("userToken");
 
-  // جلب الـ user profile و assessment results من الـ API
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        // جلب الـ user profile
         const profileResponse = await axios.get(
           "https://evolvify.runasp.net/api/Accounts/userProfile",
           {
@@ -54,7 +54,6 @@ const Dashboard = () => {
           setProfileImage(userData.profileImageUrl || placeholderImg);
         }
 
-        // جلب الـ assessment results
         const assessmentResponse = await axios.get(
           "https://evolvify.runasp.net/api/Assessments/Result",
           {
@@ -81,18 +80,33 @@ const Dashboard = () => {
     if (token) {
       fetchData();
     } else {
-      navigate("/login"); // لو مافيش token، يروح لصفحة اللوجين
+      navigate("/login");
     }
   }, [token, navigate]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollPos = window.scrollY;
+      if (currentScrollPos > prevScrollPos) {
+        setIsVisible(false); // اخفاء الزرارين لما ننزل
+      } else {
+        setIsVisible(true); // اظهار الزرارين لما نطلع
+      }
+      setPrevScrollPos(currentScrollPos);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [prevScrollPos]);
+
   const handleNext = () => {
-    const cardWidth = 310; // عرض الكارد الثابت
-    const gap = 16; // قيمة gap-4 في Tailwind = 16px
-    const maxIndex = isMobile ? cards.length - 1 : cards.length - 3;
+    const cardWidth = isMobile ? 260 : isTablet ? 280 : 310;
+    const gap = 16;
+    const cardsPerView = isMobile ? 1 : isTablet ? 2 : 3;
+    const maxIndex = cards.length - cardsPerView;
     if (currentIndex < maxIndex) {
       setCurrentIndex(currentIndex + 1);
-      const cardsToMove = isMobile ? 1 : 3;
-      const scrollAmount = (cardWidth + gap) * cardsToMove;
+      const scrollAmount = cardWidth + gap;
       sliderRef.current.scrollBy({
         left: scrollAmount,
         behavior: "smooth",
@@ -101,12 +115,11 @@ const Dashboard = () => {
   };
 
   const handlePrev = () => {
-    const cardWidth = 310; // عرض الكارد الثابت
-    const gap = 16; // قيمة gap-4 في Tailwind = 16px
+    const cardWidth = isMobile ? 260 : isTablet ? 280 : 310;
+    const gap = 16;
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
-      const cardsToMove = isMobile ? 1 : 3;
-      const scrollAmount = (cardWidth + gap) * cardsToMove;
+      const scrollAmount = cardWidth + gap;
       sliderRef.current.scrollBy({
         left: -scrollAmount,
         behavior: "smooth",
@@ -122,11 +135,9 @@ const Dashboard = () => {
       const file = e.target.files[0];
       if (file) {
         try {
-          // إنشاء FormData لإرسال الصورة
           const formData = new FormData();
           formData.append("Image", file);
 
-          // إرسال الصورة للـ API
           const response = await axios.put(
             "https://evolvify.runasp.net/api/Accounts/UpdateProfileImage",
             formData,
@@ -140,7 +151,6 @@ const Dashboard = () => {
           );
 
           if (response.data.success) {
-            // تحديث الصورة في الـ state باستخدام الـ URL اللي رجع من الـ API
             setProfileImage(`https://evolvify.runasp.net${response.data.data}`);
           } else {
             console.error(
@@ -159,8 +169,12 @@ const Dashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("userToken"); // نمسح الـ token
+    localStorage.removeItem("userToken");
     navigate("/login");
+  };
+
+  const handleHome = () => {
+    navigate("/home");
   };
 
   const progressData = [
@@ -192,81 +206,100 @@ const Dashboard = () => {
     <section className="dashboard flex flex-col min-h-screen md:flex-row">
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-4/5 max-w-xs bg-[#233A66] text-white p-5 flex flex-col items-center transition-transform duration-300 z-50 md:static md:flex md:w-72 md:min-h-screen md:translate-x-0 ${
+        className={`fixed top-0 left-0 h-full w-4/5 max-w-xs bg-[#233A66] text-white p-4 sm:p-5 flex flex-col items-center transition-transform duration-300 z-50 lg:static lg:flex lg:w-64 lg:min-h-screen lg:translate-x-0 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        onClick={toggleSidebar}
       >
-        <div className="flex items-center justify-between mb-5 w-full">
-          <img src={logoLight} alt="Evolvify Logo" className="mr-2 w-48 h-20" />
-          <button className="md:hidden text-white" onClick={toggleSidebar}>
-            <i className="fa-solid fa-times"></i>
+        <div className="flex items-center justify-between mb-4 sm:mb-5 w-full">
+          <img
+            src={logoLight}
+            alt="Evolvify Logo"
+            className="mx-auto w-36 sm:w-48 h-16 sm:h-20"
+          />
+          <button className="lg:hidden text-white" onClick={toggleSidebar}>
+            <i className="fa-solid fa-times hover:text-red-500 text-lg sm:text-xl transition-transform duration-500 hover:rotate-180"></i>
           </button>
         </div>
-        <div className="ProfileImg text-center mb-5">
+        <div className="ProfileImg text-center mb-4 sm:mb-5">
           <img
             src={profileImage}
             alt="User Profile"
-            className="rounded-full mb-4 w-28 h-28 mx-auto"
+            className="rounded-full mb-3 sm:mb-4 w-24 h-24 sm:w-28 sm:h-28 mx-auto object-cover"
           />
-          <h3 className="text-lg font-semibold mb-2">{name}</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2 truncate max-w-full">
+            {name}
+          </h3>
           <button
             onClick={handleEditProfile}
-            className="flex justify-between items-center bg-blue-500 text-white py-2 px-2 rounded-md w-40 mt-4 my-10"
+            className="flex justify-between mx-auto items-center bg-blue-500 hover:bg-blue-600 text-white py-1.5 sm:py-2 px-2 sm:px-3 rounded-md w-36 sm:w-40 mt-3 sm:mt-4 my-6 sm:my-10 text-sm sm:text-base"
           >
             <span>Edit</span>
             <i className="fa-regular fa-pen-to-square"></i>
           </button>
-          <div className="UserInfo">
-            <p className="flex items-center my-2">
-              <i className="fa-solid fa-envelope mr-2 text-white"></i>
+          <div className="UserInfo text-sm sm:text-base">
+            <p className="flex items-center my-1 sm:my-2 truncate">
+              <i className="fa-solid fa-envelope mr-1 sm:mr-2 text-white"></i>
               {email}
             </p>
-            <p className="flex items-center">
-              <i className="fa-solid fa-phone mr-2 text-white"></i>
+            <p className="flex items-center truncate">
+              <i className="fa-solid fa-phone mr-1 sm:mr-2 text-white"></i>
               0123478900
             </p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="py-2 w-full mt-auto bg-red-500 hover:bg-red-600 text-white border-none rounded-md cursor-pointer"
+          className="py-1.5 sm:py-2 w-full mt-auto bg-red-500 hover:bg-red-600 text-white border-none rounded-md cursor-pointer text-sm sm:text-base"
         >
-          <i className="fa-solid fa-right-from-bracket mr-2"></i>
+          <i className="fa-solid fa-right-from-bracket mr-1 sm:mr-2"></i>
           Log out
         </button>
       </aside>
 
-      {/* Overlay for mobile sidebar */}
+      {/* Overlay for mobile and tablet sidebar */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 md:hidden ${
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 lg:hidden ${
           isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={toggleSidebar}
       ></div>
 
-      {/* Hamburger Icon for Mobile */}
+      {/* Hamburger Icon for Mobile and Tablet */}
       <button
-        className={`md:hidden p-4 text-white bg-gray-500 rounded-full fixed top-5 left-5 z-50 ${
-          isSidebarOpen ? "hidden" : ""
+        className={`lg:hidden w-9 h-9 sm:w-10 sm:h-10 text-slate-100 bg-[#233A66] rounded-lg fixed top-2 left-1 z-50 flex items-center justify-center transition-all duration-300 ${
+          isVisible ? "opacity-100" : "opacity-0 -translate-y-16"
         }`}
         onClick={toggleSidebar}
       >
-        <i className="fa-solid fa-bars"></i>
+        <i className="fa-solid fa-bars text-lg sm:text-xl transition-transform duration-500 hover:rotate-180"></i>
+      </button>
+
+      {/* Home Icon */}
+      <button
+        className={`fixed top-2 right-1 z-50 w-9 h-9 sm:w-10 sm:h-10 text-slate-100 bg-[#233A66] rounded-md flex items-center justify-center transition-all duration-300 hover:scale-105 ${
+          isVisible ? "opacity-100" : "opacity-0 -translate-y-16"
+        }`}
+        onClick={handleHome}
+        title="Back to Home"
+      >
+        <i className="fa-solid fa-house text-lg sm:text-xl"></i>
       </button>
 
       {/* Main Content */}
-      <main className="flex-1 p-5">
+      <main className="flex-1 p-3 sm:p-5">
         {loading ? (
-          <div className="text-center">Loading...</div>
+          <div className="text-center text-base sm:text-lg">Loading...</div>
         ) : (
           <>
-            <h1 className="text-xl md:text-2xl text-[#233A66] font-bold text-center mb-5">
-              Welcome, {name}
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-center mb-4 sm:mb-5">
+              <span className="text-[#233A66]">Welcome, </span>
+              <span className="text-[#64B5F6]">{name}</span>
             </h1>
 
             {/* Course Progress */}
-            <div className="mb-10">
-              <h2 className="text-lg sm:text-xl lg:text-2xl text-[#233A66] font-semibold mb-3">
+            <div className="mb-8 sm:mb-10">
+              <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl text-[#233A66] font-semibold mb-2 sm:mb-3">
                 Course in progress
               </h2>
               <div className="relative">
@@ -274,29 +307,32 @@ const Dashboard = () => {
                   ref={sliderRef}
                   className="Cards overflow-x-hidden scrollbar-hidden w-full flex justify-center snap-x snap-mandatory"
                 >
-                  <div className="flex gap-4 pb-4">
+                  <div className="flex gap-6 pb-4">
                     {cards
-                      .slice(currentIndex, currentIndex + (isMobile ? 1 : 3))
+                      .slice(
+                        currentIndex,
+                        currentIndex + (isMobile ? 1 : isTablet ? 2 : 3)
+                      )
                       .map((card) => (
                         <div
                           key={card.id}
-                          className="bg-white w-[310px] h-[210px] p-4 rounded-lg flex-shrink-0 shadow-md snap-center"
+                          className="bg-gray-100 w-[260px] sm:w-[280px] md:w-[310px] h-[200px] sm:h-[200px] p-3 sm:p-4 rounded-lg flex-shrink-0 shadow-lg snap-center transition-all duration-300 hover:scale-105 hover:shadow-lg"
                         >
-                          <p className="font-semibold text-[#233A66] text-center text-base sm:text-lg">
+                          <p className="font-semibold text-[#233A66] text-center text-sm sm:text-base md:text-lg">
                             {card.skill}
                           </p>
-                          <p className="text-xs sm:text-sm text-[#233A66] text-center mt-2">
+                          <p className="text-xs sm:text-sm text-[#233A66] text-center mt-1 sm:mt-2 line-clamp-3">
                             Improving your {card.skill.toLowerCase()} skills can
                             help you perform better engage your audience, and
                             leave a lasting impression.
                           </p>
-                          <div className="relative w-full bg-gray-300 rounded-full h-3 mt-6">
+                          <div className="relative w-full bg-gray-300 rounded-full h-2.5 sm:h-3 mt-4 sm:mt-6">
                             <div
                               className="bg-[#64B5F6] h-full rounded-full relative"
                               style={{ width: `${card.progress}%` }}
                             >
                               <p
-                                className="text-sm absolute top-4 -translate-y-1/2 whitespace-nowrap text-center text-black"
+                                className="text-xs sm:text-sm absolute top-3 sm:top-4 -translate-y-1/2 whitespace-nowrap text-center text-black"
                                 style={{
                                   left: "50%",
                                   transform: "translateX(-50%)",
@@ -314,40 +350,40 @@ const Dashboard = () => {
                 {/* Navigation Buttons */}
                 <button
                   onClick={handlePrev}
-                  className={`absolute w-10 h-10 sm:w-12 sm:h-12 top-1/2 -translate-y-1/2 bg-blue-400 text-white rounded-full -left-4 sm:left-8 ${
+                  className={`absolute w-7 sm:w-8 md:w-10 lg:w-12 h-7 sm:h-8 md:h-10 lg:h-12 top-1/2 -translate-y-1/2 bg-[#64B5F6] hover:bg-blue-500 text-white rounded-full -left-3 sm:-left-4 md:left-0 lg:left-8 ${
                     currentIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                   disabled={currentIndex === 0}
                 >
-                  <i className="fa-solid fa-chevron-left"></i>
+                  <i className="fa-solid fa-chevron-left text-xs sm:text-sm md:text-base"></i>
                 </button>
                 <button
                   onClick={handleNext}
-                  className={`absolute w-10 h-10 sm:w-12 sm:h-12 top-1/2 -translate-y-1/2 bg-blue-400 text-white rounded-full -right-4 sm:right-8 ${
+                  className={`absolute w-7 sm:w-8 md:w-10 lg:w-12 h-7 sm:h-8 md:h-10 lg:h-12 top-1/2 -translate-y-1/2 bg-[#64B5F6] hover:bg-blue-500 text-white rounded-full -right-3 sm:-right-4 md:right-0 lg:right-8 ${
                     currentIndex >=
-                    (isMobile ? cards.length - 1 : cards.length - 3)
+                    cards.length - (isMobile ? 1 : isTablet ? 2 : 3)
                       ? "opacity-50 cursor-not-allowed"
                       : ""
                   }`}
                   disabled={
                     currentIndex >=
-                    (isMobile ? cards.length - 1 : cards.length - 3)
+                    cards.length - (isMobile ? 1 : isTablet ? 2 : 3)
                   }
                 >
-                  <i className="fa-solid fa-chevron-right"></i>
+                  <i className="fa-solid fa-chevron-right text-xs sm:text-sm md:text-base"></i>
                 </button>
               </div>
             </div>
 
-            <div className="border-2 border-[#64B5F6] w-[1000px] mx-auto rounded-lg my-10"></div>
+            <div className="border-2 border-[#64B5F6] w-full max-w-[1000px] mx-auto rounded-lg my-6 sm:my-10"></div>
 
             {/* User Progress and Assessment Result */}
-            <h2 className="text-lg sm:text-xl lg:text-2xl text-[#233A66] font-semibold mb-3">
+            <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl text-[#233A66] font-semibold mb-2 sm:mb-3">
               User in progress
             </h2>
-            <div className="flex flex-col lg:flex-row gap-5 lg:gap-10 mb-0">
+            <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 lg:gap-10 mb-0">
               {/* User Progress */}
-              <div className="flex flex-col sm:flex-row gap-5">
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-5">
                 {progressData.map((progress, index) => (
                   <UserProgressCard
                     key={index}
@@ -361,34 +397,41 @@ const Dashboard = () => {
               </div>
 
               {/* Assessment Result */}
-              <div className="flex-1 mt-5 sm:mt-0 sm:ml-10">
-                <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                  <h2 className="text-lg md:text-xl font-semibold mb-3">
+              <div className="flex-1 mt-4 sm:mt-5 lg:mt-0 lg:ml-10">
+                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg border border-blue-200">
+                  <h2 className="text-[#233A66] text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-3">
                     Assessment Result
                   </h2>
                   {assessmentError ? (
-                    <p className="text-red-500">{assessmentError}</p>
+                    <p className="text-red-500 text-sm sm:text-base">
+                      {assessmentError}
+                    </p>
                   ) : assessmentResults.length > 0 ? (
                     <div>
                       {assessmentResults.map((result, index) => (
-                        <p key={index} className="my-1">
-                          {result.skill}{" "}
+                        <div
+                          key={index}
+                          className="flex justify-between items-center my-1 text-sm sm:text-base"
+                        >
+                          <p className="truncate">{result.skill}</p>
                           <span
                             className={
                               result.level === "Advanced"
                                 ? "text-green-600"
                                 : result.level === "Intermediate"
                                 ? "text-yellow-500"
-                                : "text-gray-500"
+                                : "text-red-500"
                             }
                           >
                             {result.level}
                           </span>
-                        </p>
+                        </div>
                       ))}
                     </div>
                   ) : (
-                    <p>No assessment results available.</p>
+                    <p className="text-md text-red-500 sm:text-base">
+                      No assessment results available.
+                    </p>
                   )}
                 </div>
               </div>
