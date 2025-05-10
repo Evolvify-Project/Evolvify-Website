@@ -74,7 +74,7 @@ const RecommendedPlan = () => {
   }, []);
 
   const handleSkip = () => {
-    navigate("/");
+    navigate("/courses");
   };
 
   const handleRetry = () => {
@@ -199,7 +199,7 @@ const RecommendedPlan = () => {
               key={groupIndex}
               className={`grid grid-cols-1 ${
                 skillGroup.length === 1 ? "sm:grid-cols-1" : "sm:grid-cols-2"
-              } gap-8 max-w-4xl mx-auto`}
+              } gap-5 max-w-4xl mx-auto`}
             >
               {skillGroup.map((skill, index) => {
                 const recommendedCourses = getRecommendedCourse(
@@ -222,9 +222,9 @@ const RecommendedPlan = () => {
                       ).map((course, idx) => (
                         <div
                           key={idx}
-                          className="bg-white rounded-2xl shadow-md flex flex-col justify-between items-center w-full h-[350px] max-h-[350px] transform transition-transform duration-300 hover:scale-105 hover:shadow-lg mb-4"
+                          className="bg-white rounded-2xl shadow-md flex flex-col justify-between items-center w-full h-[350px] max-h-[350px] transform transition-transform duration-300 hover:scale-105 hover:shadow-lg mb-5"
                         >
-                          <div className="w-full h-[200px] relative">
+                          <div className="w-full h-[250px] relative">
                             <img
                               src={course.image}
                               alt={course.name}

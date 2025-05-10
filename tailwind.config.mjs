@@ -8,6 +8,8 @@ export default {
     },
     extend: {
       colors: {
+        "insta-start": "#F56040",
+        "insta-end": "#E1306C",
         primary: {
           50: "#a7b0c2",
           100: "#919db3",

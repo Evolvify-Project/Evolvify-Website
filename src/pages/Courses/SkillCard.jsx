@@ -15,7 +15,7 @@ const SkillCard = ({ skill }) => {
       />
 
       <div className="p-5 flex flex-col gap-2">
-        <h2 className="text-xl font-bold text-[#1E3A8A]">{skill.title}</h2>
+        <h2 className="text-xl font-bold text-[#233A66]">{skill.title}</h2>
 
         <p className="text-sm text-gray-600 line-clamp-2">
           {skill.description}
