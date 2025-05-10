@@ -430,6 +430,7 @@ const InterviewTestPage = () => {
 
     setLoading(true);
     setReviewing(false);
+    setUploadStatus({ message: "Processing video...", progress: 10 });
 
     try {
       console.log("Uploading video...");
@@ -682,12 +683,16 @@ const InterviewTestPage = () => {
         setError("Uploaded video exceeds 100MB limit");
         return;
       }
-      const videoElement = document.createElement("video");
-      videoElement.src = URL.createObjectURL(file);
-      videoElement.onloadedmetadata = () => {
-        console.log("Uploading video file:", file.name, "Size:", file.size);
-        uploadVideo(file);
-      };
+
+      // Create video URL and set it for preview
+      const videoUrl = URL.createObjectURL(file);
+      setRecordedVideoUrl(videoUrl);
+      setRecordedBlob(file);
+      setReviewing(true);
+      showMessage(
+        "Video uploaded. Please review before submitting.",
+        "success"
+      );
     } else {
       setError("Please select a video file");
     }
@@ -851,7 +856,9 @@ const InterviewTestPage = () => {
                 </div>
                 <span className="text-sm text-gray-500">{questionTimer}s</span>
               </div>
-              <p className="text-gray-700">{interviewQuestions[currentQuestion]}</p>
+              <p className="text-gray-700">
+                {interviewQuestions[currentQuestion]}
+              </p>
               <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-blue-500 h-2 rounded-full transition-all duration-1000 ease-linear"
