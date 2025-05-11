@@ -1,12 +1,54 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Evolvify 🎯
 
-Currently, two official plugins are available:
+**Evolvify** is a graduation project built to help individuals develop and improve their essential soft skills for the job market. It provides an interactive and engaging learning environment with practical tools and AI-powered features.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## Expanding the ESLint configuration
+- 🧠 **Skill Assessment Quiz** – Evaluate your current level in communication, teamwork, time management, and more.
+- 📚 **Content Library** – Access to a wide variety of videos, articles, and interactive lessons.
+- 👤 **User Dashboard** – Personalized tracking of your progress and saved content.
+- 💬 **AI Chatbot** – Smart assistant to answer questions and give learning tips.
+- 🧑‍🤝‍🧑 **Community Forum** – Share posts, comment, and interact with others based on shared skills.
+- 📊 **Interview Preparation** – Tools to simulate and analyze your presentation and stress levels using AI & Computer Vision.
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🛠️ Technologies Used
+
+- **Frontend:** React.js, Tailwind CSS, Formik, Yup  
+- **Backend:**   .NET
+- **AI Tools:** Computer Vision (for stress detection)  
+- **APIs:** REST APIs for login, post handling, etc.
+
+## 📷 Screenshots
+
+> _You can add screenshots here using the format below:_  
+```md
+![Home Page](./screenshots/home.png)
+```
+
+## 🧪 How to Run the Project
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/evolvify.git
+
+# Navigate to the project folder
+cd evolvify
+
+# Install dependencies
+npm install
+
+# Run the app
+npm start
+```
+
+> Make sure you have Node.js and npm installed.
+
+
+## 📜 License
+
+This project is for educational purposes and is part of the graduation requirement. All rights reserved to the team members.
+
+---
+
+**Feel free to contribute or give feedback!** 🌟
