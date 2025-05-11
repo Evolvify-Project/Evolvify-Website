@@ -6,7 +6,7 @@
 ## 🚀 Features
 
 - 🧠 **Skill Assessment Quiz** – Evaluate your current level in communication, teamwork, time management, and more.
-- 📚 **Content Library** – Access to a wide variety of videos, articles, and interactive lessons.
+- 📚 **Content Library** – Access to various videos, articles, and interactive lessons.
 - 👤 **User Dashboard** – Personalized tracking of your progress and saved content.
 - 💬 **AI Chatbot** – Smart assistant to answer questions and give learning tips.
 - 🧑‍🤝‍🧑 **Community Forum** – Share posts, comment, and interact with others based on shared skills.
@@ -19,18 +19,12 @@
 - **AI Tools:** Computer Vision (for stress detection)  
 - **APIs:** REST APIs for login, post handling, etc.
 
-## 📷 Screenshots
-
-> _You can add screenshots here using the format below:_  
-```md
-![Home Page](./screenshots/home.png)
-```
 
 ## 🧪 How to Run the Project
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/evolvify.git
+git clone https://github.com/Evolvify-Project/Evolvify-Website.git
 
 # Navigate to the project folder
 cd evolvify
