@@ -6,6 +6,7 @@ import { useVoiceRecording } from "../hooks/useVoiceRecording";
 import { sendMessage, sendVoiceMessage } from "../services/api";
 import type { Message } from "../types/chat";
 import evolvaContent from "../assets/images/evolva_content.png";
+import { motion } from "framer-motion";
 import evolvaLogo from "../assets/images/logoChatbot.png";
 import { useNavigate } from "react-router-dom";
 
@@ -73,8 +74,8 @@ function Chatbot() {
         </div>
 
         <button
-          onClick={() => navigate("/home")}
-          className="p-2 rounded-full hover:bg-blue-50 transition-colors"
+          onClick={() => navigate("/")}
+          className="p-2 rounded-lg hover:bg-blue-100 transition-all duration-300 hover:scale-110"
         >
           <i className="fa-solid fa-house text-[#233A66] hover:text-blue-400 text-xl"></i>
         </button>
@@ -84,8 +85,35 @@ function Chatbot() {
       <div className="flex-1 overflow-y-auto p-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <img src={evolvaContent} alt="Welcome" className="w-48 h-48 mb-4" />
-            <h2 className="text-2xl text-blue-400 mb-2">Hi, {username}</h2>
+            <motion.img
+              src={evolvaContent}
+              alt="Welcome"
+              className="w-48 h-48 mb-4 rounded-full shadow-xl"
+              animate={{
+                y: [0, -10, 0],
+                boxShadow: [
+                  "0 0 15px rgba(0, 128, 255, 0.3)",
+                  "0 0 30px rgba(0, 128, 255, 0.6)",
+                  "0 0 15px rgba(0, 128, 255, 0.3)",
+                ],
+              }}
+              transition={{
+                y: {
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                },
+                boxShadow: {
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                },
+              }}
+            />{" "}
+            <h2 className="text-2xl font-semibold">
+              <span className="text-[#233A66]">Hi, </span>
+              <span className="text-[#64B5F6]">{username}</span>
+            </h2>
             <p className="text-3xl text-blue-400">
               What would you like to know?
             </p>

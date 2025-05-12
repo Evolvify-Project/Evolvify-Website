@@ -6,7 +6,7 @@ const UserProgressCard = ({
   color,
 }) => {
   return (
-    <div className="bg-slate-100 p-4 rounded-lg text-center shadow-lg flex-1 min-w-[200px] h-48 flex items-center justify-center">
+    <div className="bg-slate-100 p-4 rounded-lg text-center shadow-lg flex-1 min-w-[200px] h-48 flex items-center justify-center transition-all duration-200 hover:shadow-lg hover:scale-105">
       <div>
         <p className="text-sm font-semibold">{label}</p>
         {subtitle && <p className={`text-sm ${subtitleColor}`}>{subtitle}</p>}

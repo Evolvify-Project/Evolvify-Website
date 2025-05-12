@@ -33,6 +33,21 @@ const Dashboard = () => {
 
   const token = localStorage.getItem("userToken");
 
+  const cardsPerView = isMobile ? 1 : isTablet ? 2 : 3;
+
+  const getStartIndex = () => {
+    const maxStartIndex = Math.max(0, cards.length - cardsPerView);
+    if (currentIndex < cardsPerView - 1) {
+      return 0;
+    } else if (currentIndex >= cards.length - 1) {
+      return maxStartIndex;
+    } else {
+      return currentIndex - (cardsPerView - 1);
+    }
+  };
+
+  const startIndex = getStartIndex();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -88,9 +103,9 @@ const Dashboard = () => {
     const handleScroll = () => {
       const currentScrollPos = window.scrollY;
       if (currentScrollPos > prevScrollPos) {
-        setIsVisible(false); // اخفاء الزرارين لما ننزل
+        setIsVisible(false);
       } else {
-        setIsVisible(true); // اظهار الزرارين لما نطلع
+        setIsVisible(true);
       }
       setPrevScrollPos(currentScrollPos);
     };
@@ -98,34 +113,6 @@ const Dashboard = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [prevScrollPos]);
-
-  const handleNext = () => {
-    const cardWidth = isMobile ? 260 : isTablet ? 280 : 310;
-    const gap = 16;
-    const cardsPerView = isMobile ? 1 : isTablet ? 2 : 3;
-    const maxIndex = cards.length - cardsPerView;
-    if (currentIndex < maxIndex) {
-      setCurrentIndex(currentIndex + 1);
-      const scrollAmount = cardWidth + gap;
-      sliderRef.current.scrollBy({
-        left: scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const handlePrev = () => {
-    const cardWidth = isMobile ? 260 : isTablet ? 280 : 310;
-    const gap = 16;
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      const scrollAmount = cardWidth + gap;
-      sliderRef.current.scrollBy({
-        left: -scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
 
   const handleEditProfile = async () => {
     const input = document.createElement("input");
@@ -277,7 +264,7 @@ const Dashboard = () => {
 
       {/* Home Icon */}
       <button
-        className={`fixed top-2 right-1 z-50 w-9 h-9 sm:w-10 sm:h-10 text-slate-100 bg-[#233A66] rounded-md flex items-center justify-center transition-all duration-300 hover:scale-105 ${
+        className={`fixed top-2 right-1 z-50 w-9 h-9 sm:w-10 sm:h-10 text-slate-100 bg-[#233A66] rounded-md flex items-center justify-center transition-all duration-300 hover:scale-110 ${
           isVisible ? "opacity-100" : "opacity-0 -translate-y-16"
         }`}
         onClick={handleHome}
@@ -309,30 +296,44 @@ const Dashboard = () => {
                 >
                   <div className="flex gap-6 pb-4">
                     {cards
-                      .slice(
-                        currentIndex,
-                        currentIndex + (isMobile ? 1 : isTablet ? 2 : 3)
-                      )
+                      .slice(startIndex, startIndex + cardsPerView)
                       .map((card) => (
                         <div
                           key={card.id}
-                          className="bg-gray-100 w-[260px] sm:w-[280px] md:w-[310px] h-[200px] sm:h-[200px] p-3 sm:p-4 rounded-lg flex-shrink-0 shadow-lg snap-center transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                          className={`w-[260px] sm:w-[280px] md:w-[310px] min-h-[${
+                            isMobile ? "160px" : "200px"
+                          }] p-2 sm:p-3 rounded-lg flex-shrink-0 shadow-lg snap-center transition-all duration-200 hover:shadow-lg hover:scale-105 ${
+                            currentIndex === cards.indexOf(card)
+                              ? "bg-gray-200 scale-105 rounded-xl"
+                              : "bg-gray-100 scale-100"
+                          }`}
+                          style={{ minHeight: isMobile ? "160px" : "200px" }}
                         >
                           <p className="font-semibold text-[#233A66] text-center text-sm sm:text-base md:text-lg">
                             {card.skill}
                           </p>
-                          <p className="text-xs sm:text-sm text-[#233A66] text-center mt-1 sm:mt-2 line-clamp-3">
+                          <p
+                            className={`text-xs sm:text-sm text-[#233A66] items-center text-center mt-1 ${
+                              isMobile ? "line-clamp-2" : "line-clamp-3"
+                            }`}
+                          >
                             Improving your {card.skill.toLowerCase()} skills can
                             help you perform better engage your audience, and
                             leave a lasting impression.
                           </p>
-                          <div className="relative w-full bg-gray-300 rounded-full h-2.5 sm:h-3 mt-4 sm:mt-6">
+                          <div
+                            className={`relative w-full bg-gray-300 rounded-full h-2 sm:h-2.5 ${
+                              isMobile ? "mt-1" : "mt-2 sm:mt-3"
+                            }`}
+                          >
                             <div
                               className="bg-[#64B5F6] h-full rounded-full relative"
                               style={{ width: `${card.progress}%` }}
                             >
                               <p
-                                className="text-xs sm:text-sm absolute top-3 sm:top-4 -translate-y-1/2 whitespace-nowrap text-center text-black"
+                                className={`text-xs sm:text-sm absolute ${
+                                  isMobile ? "top-1.5" : "top-2 sm:top-2.5"
+                                } -translate-y-1/2 whitespace-nowrap text-center text-black`}
                                 style={{
                                   left: "50%",
                                   transform: "translateX(-50%)",
@@ -347,31 +348,20 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                {/* Navigation Buttons */}
-                <button
-                  onClick={handlePrev}
-                  className={`absolute w-7 sm:w-8 md:w-10 lg:w-12 h-7 sm:h-8 md:h-10 lg:h-12 top-1/2 -translate-y-1/2 bg-[#64B5F6] hover:bg-blue-500 text-white rounded-full -left-3 sm:-left-4 md:left-0 lg:left-8 ${
-                    currentIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  disabled={currentIndex === 0}
-                >
-                  <i className="fa-solid fa-chevron-left text-xs sm:text-sm md:text-base"></i>
-                </button>
-                <button
-                  onClick={handleNext}
-                  className={`absolute w-7 sm:w-8 md:w-10 lg:w-12 h-7 sm:h-8 md:h-10 lg:h-12 top-1/2 -translate-y-1/2 bg-[#64B5F6] hover:bg-blue-500 text-white rounded-full -right-3 sm:-right-4 md:right-0 lg:right-8 ${
-                    currentIndex >=
-                    cards.length - (isMobile ? 1 : isTablet ? 2 : 3)
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }`}
-                  disabled={
-                    currentIndex >=
-                    cards.length - (isMobile ? 1 : isTablet ? 2 : 3)
-                  }
-                >
-                  <i className="fa-solid fa-chevron-right text-xs sm:text-sm md:text-base"></i>
-                </button>
+                {/* Indicators */}
+                <div className="flex justify-center gap-2 mt-4">
+                  {cards.map((_, index) => (
+                    <div
+                      key={index}
+                      onClick={() => setCurrentIndex(index)}
+                      className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-300 ${
+                        currentIndex === index
+                          ? "bg-[#64B5F6] w-4 h-4"
+                          : "bg-gray-300"
+                      }`}
+                    ></div>
+                  ))}
+                </div>
               </div>
             </div>
 

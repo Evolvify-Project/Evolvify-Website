@@ -71,11 +71,19 @@ export default function Navbar() {
               <User className="text-sky-600 cursor-pointer" />
             </div>
           ) : (
-            <Link to="/signup">
-              <button className="w-32 h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white hover:opacity-90 transition">
-                Register
-              </button>
-            </Link>
+            <div className="flex gap-2">
+              <Link to="/signup">
+                <button className="w-24 h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white hover:opacity-90 transition">
+                  Register
+                </button>
+              </Link>
+
+              <Link to="/login">
+                <button className="w-24 h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white hover:opacity-90 transition">
+                  Login
+                </button>
+              </Link>
+            </div>
           )}
         </div>
 
@@ -118,22 +126,37 @@ export default function Navbar() {
                 </NavLink>
               </li>
             ))}
-            <li>
-              {isLoggedIn ? (
+            
+            {/* Auth Buttons in Mobile */}
+            {!isLoggedIn && (
+              <>
+                <li>
+                  <Link to="/signup" onClick={() => setIsOpen(false)}>
+                    <button className="w-full h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white">
+                      Register
+                    </button>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/login" onClick={() => setIsOpen(false)}>
+                    <button className="w-full h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white">
+                      Login
+                    </button>
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {isLoggedIn && (
+              <li>
                 <button
                   onClick={handleLogout}
                   className="w-full text-left text-sm text-gray-600"
                 >
                   Logout
                 </button>
-              ) : (
-                <Link to="/signup" onClick={() => setIsOpen(false)}>
-                  <button className="w-full h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white">
-                    Register
-                  </button>
-                </Link>
-              )}
-            </li>
+              </li>
+            )}
           </ul>
         </div>
       )}
