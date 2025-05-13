@@ -4,12 +4,13 @@ import react from "@vitejs/plugin-react";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: "/Evolvify-Website/",
   server: {
     proxy: {
-      '/Images': {
-        target: 'https://evolvify.runasp.net',
+      "/Images": {
+        target: "https://evolvify.runasp.net",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/Images/, '/Images'),
+        rewrite: (path) => path.replace(/^\/Images/, "/Images"),
       },
     },
   },
