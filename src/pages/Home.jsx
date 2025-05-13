@@ -24,7 +24,7 @@ function Home() {
               <br />
               SKILL IN MINUTES
             </h1>
-            <Link to="./Quiz">
+            <Link to="../Quiz">
               <button className="bg-gradient-to-r from-sky-900 to-blue-500 text-white py-3 px-6 mt-10 rounded-full text-sm shadow-md hover:opacity-90 transition">
                 Get started
               </button>
@@ -75,7 +75,7 @@ function Home() {
               provide expert insights, practical exercises, and tailored content
               to help you grow.
             </p>
-            <Link to="./Quiz">
+            <Link to="../Quiz">
               <button className="bg-gradient-to-r from-sky-900 to-blue-500 text-white py-3 px-6 mt-10 rounded-full text-sm shadow-md hover:opacity-90 transition">
                 Get started
               </button>

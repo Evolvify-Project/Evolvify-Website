@@ -138,10 +138,7 @@ export default function Navbar() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    to="/Evolvify-Website/login"
-                    onClick={() => setIsOpen(false)}
-                  >
+                  <Link to="./login" onClick={() => setIsOpen(false)}>
                     <button className="w-full h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white">
                       Login
                     </button>
