@@ -53,7 +53,7 @@ function App() {
       element: <Layout />,
       errorElement: <ErrorPage />,
       children: [
-        { index: true, element: <Navigate to="/Evolvify-Website/home" /> },
+        { index: true, element: <Navigate to="home" /> },
         { path: "login", element: <Login />, errorElement: <ErrorPage /> },
         { path: "signup", element: <Sign />, errorElement: <ErrorPage /> },
         {

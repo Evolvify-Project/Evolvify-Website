@@ -22,6 +22,8 @@ export default defineConfig({
   },
   build: {
     target: "esnext",
+    outDir: "dist",
+    assetsDir: "assets",
     rollupOptions: {
       output: {
         manualChunks: {
