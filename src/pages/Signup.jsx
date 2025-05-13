@@ -15,6 +15,8 @@ export default function Signup() {
   const passwordRegex =
     /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/;
 
+  const phoneRegex = /^(010|011|012|015)\d{8}$/;
+
   const validationSchema = object({
     name: string()
       .required("Name is required")
@@ -23,6 +25,13 @@ export default function Signup() {
 
     email: string().required("Email is required").email("Email is invalid"),
 
+    phoneNumber: string()
+      .required("Phone number is required")
+      .matches(
+        phoneRegex,
+        "Phone number must be a valid Egyptian number (e.g., 01012345678)"
+      ),
+
     password: string()
       .required("Password is required")
       .matches(
@@ -30,7 +39,7 @@ export default function Signup() {
         "Password must have at least 8 characters, one uppercase, one lowercase, one number, and one special character"
       ),
 
-    rePassword: string()
+    confirmPassword: string()
       .required("Confirm Password is required")
       .oneOf([ref("password")], "Password and confirm password should match"),
   });
@@ -39,8 +48,9 @@ export default function Signup() {
     initialValues: {
       name: "",
       email: "",
+      phoneNumber: "",
       password: "",
-      rePassword: "",
+      confirmPassword: "",
     },
 
     validationSchema,
@@ -53,8 +63,9 @@ export default function Signup() {
           {
             username: values.name,
             email: values.email,
+            phoneNumber: values.phoneNumber,
             password: values.password,
-            confirmPassword: values.rePassword,
+            confirmPassword: values.confirmPassword,
           },
           {
             headers: {
@@ -162,6 +173,24 @@ export default function Signup() {
                 )}
               </div>
 
+              {/* Phone Number */}
+              <div className="phone w-full max-w-sm">
+                <input
+                  type="text"
+                  placeholder="Phone Number"
+                  name="phoneNumber"
+                  className="form-control w-full px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  value={formik.values.phoneNumber}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.errors.phoneNumber && formik.touched.phoneNumber && (
+                  <p className="text-red-500 font-medium text-sm mt-1">
+                    *{formik.errors.phoneNumber}
+                  </p>
+                )}
+              </div>
+
               {/* Password */}
               <div className="password w-full max-w-sm">
                 <input
@@ -185,17 +214,18 @@ export default function Signup() {
                 <input
                   type="password"
                   placeholder="Confirm password"
-                  name="rePassword"
+                  name="confirmPassword"
                   className="form-control w-full px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  value={formik.values.rePassword}
+                  value={formik.values.confirmPassword}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                 />
-                {formik.errors.rePassword && formik.touched.rePassword && (
-                  <p className="text-red-500 font-medium text-sm mt-1">
-                    *{formik.errors.rePassword}
-                  </p>
-                )}
+                {formik.errors.confirmPassword &&
+                  formik.touched.confirmPassword && (
+                    <p className="text-red-500 font-medium text-sm mt-1">
+                      *{formik.errors.confirmPassword}
+                    </p>
+                  )}
               </div>
 
               {/* API Error */}

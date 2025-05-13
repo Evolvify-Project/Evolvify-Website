@@ -77,10 +77,10 @@ const PaymentSection = () => {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center py-8 px-4">
       <div className="container mx-auto flex flex-col lg:flex-row gap-6 max-w-6xl px-4">
-        <div className="arrow mb-4">
+        <div className="ArrowBack mb-4">
           <button
             onClick={handleBack}
-            className="text-gray-800 hover:text-lime-400 focus:outline-none flex items-center gap-2 p-2 rounded-full border-2  border-gray-900 hover:bg-blue-50 transition-all duration-300"
+            className="text-gray-800 hover:text-lime-400 focus:outline-none flex items-center gap-2 p-2 rounded-md border-2  border-blue-900 hover:bg-blue-50 transition-all duration-300"
           >
             <i className="fa-solid fa-arrow-left-long text-xl"></i>
           </button>

@@ -263,7 +263,10 @@ function Quiz() {
             className="h-14 w-40 mr-4"
           />
         </div>
-        <span className="text-xl text-[#233A66]">Hi, {username}</span>
+        <h2 className="text-xl font-semibold">
+          <span className="text-[#233A66]">Hi, </span>
+          <span className="text-[#64B5F6]">{username}</span>
+        </h2>
       </div>
 
       {/* Main Content */}

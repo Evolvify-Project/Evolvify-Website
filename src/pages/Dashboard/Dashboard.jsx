@@ -12,6 +12,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [profileImage, setProfileImage] = useState(placeholderImg);
   const [assessmentResults, setAssessmentResults] = useState([]);
   const [assessmentError, setAssessmentError] = useState("");
@@ -66,6 +67,7 @@ const Dashboard = () => {
           const userData = profileResponse.data.data;
           setName(userData.userName || "Unknown User");
           setEmail(userData.email || "No Email");
+          setPhoneNumber(userData.phoneNumber || "No Phone Number");
           setProfileImage(userData.profileImageUrl || placeholderImg);
         }
 
@@ -231,7 +233,7 @@ const Dashboard = () => {
             </p>
             <p className="flex items-center truncate">
               <i className="fa-solid fa-phone mr-1 sm:mr-2 text-white"></i>
-              0123478900
+              {phoneNumber}
             </p>
           </div>
         </div>
