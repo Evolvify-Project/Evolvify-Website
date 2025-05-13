@@ -3,8 +3,11 @@ import Navbar from "../navbar/Navbar";
 import Footer from "../footer/Footer";
 import { Outlet, useLocation } from "react-router-dom";
 
+const basePath = import.meta.env.VITE_BASE_PATH || "";
+
 export default function Layout() {
   const location = useLocation();
+  const pathname = location.pathname.replace(basePath, "");
 
   const hideNavbarFooter =
     [
@@ -12,13 +15,13 @@ export default function Layout() {
       "/signup",
       "/forget-password",
       "/chatbot",
-      "/Quiz",
+      "/quiz",
       "/result",
       "/recommended-plan",
       "/payment",
       "/dashboard",
-    ].some((route) => location.pathname.startsWith(route)) ||
-    /^\/skills\/[^/]+\/assessment$/.test(location.pathname); ;
+    ].some((route) => pathname.startsWith(route)) ||
+    /^\/skills\/[^/]+\/assessment$/.test(pathname);
 
   return (
     <>

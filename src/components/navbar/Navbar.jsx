@@ -18,13 +18,13 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("userToken");
     setIsLoggedIn(false);
-    navigate("/Evolvify-Website/login");
+    navigate("./login");
   };
 
   return (
     <nav className="p-5 shadow-md bg-slate-100">
       <div className="container mx-auto flex items-center justify-between gap-4">
-        <Link to="/Evolvify-Website">
+        <Link to="./">
           <img src={logo} alt="evolvify logo" className="w-36 sm:w-48" />
         </Link>
 
@@ -43,8 +43,8 @@ export default function Navbar() {
               <NavLink
                 to={
                   item === "EvolviSense"
-                    ? "/Evolvify-Website/emotion-analysis"
-                    : `/Evolvify-Website/${item.toLowerCase()}`
+                    ? "./emotion-analysis"
+                    : `./${item.toLowerCase()}`
                 }
                 className={({ isActive }) =>
                   isActive
@@ -72,13 +72,13 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="flex gap-2">
-              <Link to="/Evolvify-Website/signup">
+              <Link to="./signup">
                 <button className="w-24 h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white hover:opacity-90 transition">
                   Register
                 </button>
               </Link>
 
-              <Link to="/Evolvify-Website/login">
+              <Link to="./login">
                 <button className="w-24 h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white hover:opacity-90 transition">
                   Login
                 </button>
@@ -112,8 +112,8 @@ export default function Navbar() {
                 <NavLink
                   to={
                     item === "EvolviSense"
-                      ? "/Evolvify-Website/emotion-analysis"
-                      : `/Evolvify-Website/${item.toLowerCase()}`
+                      ? "./emotion-analysis"
+                      : `./${item.toLowerCase()}`
                   }
                   className={({ isActive }) =>
                     isActive
@@ -131,10 +131,7 @@ export default function Navbar() {
             {!isLoggedIn && (
               <>
                 <li>
-                  <Link
-                    to="/Evolvify-Website/signup"
-                    onClick={() => setIsOpen(false)}
-                  >
+                  <Link to="./signup" onClick={() => setIsOpen(false)}>
                     <button className="w-full h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white">
                       Register
                     </button>

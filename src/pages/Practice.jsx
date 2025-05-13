@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Dialog } from "@headlessui/react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import award from "../assets/images/award_first.png";
-import payment from '../pages/payment'
+import payment from "../pages/payment";
 
 const PremiumSection = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center py-8">
@@ -65,7 +65,7 @@ const PremiumSection = () => {
                 - AI-Powered feedback <br />- Priority support and more!
               </Dialog.Description>
               <button
-                onClick={() => navigate("/payment")} 
+                onClick={() => navigate("/payment")}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
               >
                 Go to Payment
