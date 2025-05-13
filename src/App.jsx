@@ -24,7 +24,9 @@ import {
   Navigate,
 } from "react-router-dom";
 import Layout from "./components/layout/Layout";
-import { EmotionProvider } from "./pages/EmotionContext"; 
+import { EmotionProvider } from "./pages/EmotionContext";
+
+const basePath = import.meta.env.VITE_BASE_PATH || "";
 
 // Error Boundary Component
 const ErrorPage = ({ error }) => (
@@ -37,7 +39,7 @@ const ErrorPage = ({ error }) => (
         {error?.message || "An unexpected error occurred."}
       </p>
       <button
-        onClick={() => (window.location.href = "/home")}
+        onClick={() => (window.location.href = `${basePath}/home`)}
         className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
       >
         Go to Home
@@ -49,11 +51,11 @@ const ErrorPage = ({ error }) => (
 function App() {
   const router = createBrowserRouter([
     {
-      path: "/",
+      path: basePath,
       element: <Layout />,
       errorElement: <ErrorPage />,
       children: [
-        { index: true, element: <Navigate to="/home" /> },
+        { index: true, element: <Navigate to="home" /> },
         { path: "login", element: <Login />, errorElement: <ErrorPage /> },
         { path: "signup", element: <Sign />, errorElement: <ErrorPage /> },
         {

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { ChatMessage } from "./components/ChatMessage";
-import { ChatInput } from "./components/ChatInput";
+import { ChatMessage } from "./pages/ChatMessage";
+import { ChatInput } from "./pages/ChatInput";
 import { useVoiceRecording } from "./hooks/useVoiceRecording";
 import { sendMessage, sendVoiceMessage } from "./services/api";
 import type { Message } from "./types/chat";

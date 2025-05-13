@@ -4,12 +4,13 @@ import react from "@vitejs/plugin-react";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: "./",
   server: {
     proxy: {
-      '/Images': {
-        target: 'https://evolvify.runasp.net',
+      "/Images": {
+        target: "https://evolvify.runasp.net",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/Images/, '/Images'),
+        rewrite: (path) => path.replace(/^\/Images/, "/Images"),
       },
     },
   },
@@ -21,6 +22,8 @@ export default defineConfig({
   },
   build: {
     target: "esnext",
+    outDir: "dist",
+    assetsDir: "assets",
     rollupOptions: {
       output: {
         manualChunks: {
