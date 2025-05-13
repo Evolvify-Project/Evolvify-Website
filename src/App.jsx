@@ -24,7 +24,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import Layout from "./components/layout/Layout";
-import { EmotionProvider } from "./pages/EmotionContext"; 
+import { EmotionProvider } from "./pages/EmotionContext";
 
 // Error Boundary Component
 const ErrorPage = ({ error }) => (
@@ -37,7 +37,7 @@ const ErrorPage = ({ error }) => (
         {error?.message || "An unexpected error occurred."}
       </p>
       <button
-        onClick={() => (window.location.href = "/home")}
+        onClick={() => (window.location.href = "/Evolvify-Website/home")}
         className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
       >
         Go to Home
@@ -49,11 +49,11 @@ const ErrorPage = ({ error }) => (
 function App() {
   const router = createBrowserRouter([
     {
-      path: "/",
+      path: "/Evolvify-Website",
       element: <Layout />,
       errorElement: <ErrorPage />,
       children: [
-        { index: true, element: <Navigate to="/home" /> },
+        { index: true, element: <Navigate to="/Evolvify-Website/home" /> },
         { path: "login", element: <Login />, errorElement: <ErrorPage /> },
         { path: "signup", element: <Sign />, errorElement: <ErrorPage /> },
         {

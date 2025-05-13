@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import logo from '../../assets/images/logo.png';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import logo from "../../assets/images/logo.png";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { Menu, X, User } from "lucide-react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,19 +12,19 @@ export default function Navbar() {
 
   useEffect(() => {
     const token = localStorage.getItem("userToken");
-    setIsLoggedIn(!!token); // true لو فيه توكن
+    setIsLoggedIn(!!token);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("userToken");
     setIsLoggedIn(false);
-    navigate("/login");
+    navigate("/Evolvify-Website/login");
   };
 
   return (
     <nav className="p-5 shadow-md bg-slate-100">
       <div className="container mx-auto flex items-center justify-between gap-4">
-        <Link to="/">
+        <Link to="/Evolvify-Website">
           <img src={logo} alt="evolvify logo" className="w-36 sm:w-48" />
         </Link>
 
@@ -43,8 +43,8 @@ export default function Navbar() {
               <NavLink
                 to={
                   item === "EvolviSense"
-                    ? "/emotion-analysis"
-                    : `/${item.toLowerCase()}`
+                    ? "/Evolvify-Website/emotion-analysis"
+                    : `/Evolvify-Website/${item.toLowerCase()}`
                 }
                 className={({ isActive }) =>
                   isActive
@@ -72,13 +72,13 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="flex gap-2">
-              <Link to="/signup">
+              <Link to="/Evolvify-Website/signup">
                 <button className="w-24 h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white hover:opacity-90 transition">
                   Register
                 </button>
               </Link>
 
-              <Link to="/login">
+              <Link to="/Evolvify-Website/login">
                 <button className="w-24 h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white hover:opacity-90 transition">
                   Login
                 </button>
@@ -112,8 +112,8 @@ export default function Navbar() {
                 <NavLink
                   to={
                     item === "EvolviSense"
-                      ? "/emotion-analysis"
-                      : `/${item.toLowerCase()}`
+                      ? "/Evolvify-Website/emotion-analysis"
+                      : `/Evolvify-Website/${item.toLowerCase()}`
                   }
                   className={({ isActive }) =>
                     isActive
@@ -126,36 +126,31 @@ export default function Navbar() {
                 </NavLink>
               </li>
             ))}
-            
+
             {/* Auth Buttons in Mobile */}
             {!isLoggedIn && (
               <>
                 <li>
-                  <Link to="/signup" onClick={() => setIsOpen(false)}>
+                  <Link
+                    to="/Evolvify-Website/signup"
+                    onClick={() => setIsOpen(false)}
+                  >
                     <button className="w-full h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white">
                       Register
                     </button>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/login" onClick={() => setIsOpen(false)}>
+                  <Link
+                    to="/Evolvify-Website/login"
+                    onClick={() => setIsOpen(false)}
+                  >
                     <button className="w-full h-10 bg-gradient-to-r from-sky-900 to-blue-500 rounded-3xl text-white">
                       Login
                     </button>
                   </Link>
                 </li>
               </>
-            )}
-
-            {isLoggedIn && (
-              <li>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left text-sm text-gray-600"
-                >
-                  Logout
-                </button>
-              </li>
             )}
           </ul>
         </div>
