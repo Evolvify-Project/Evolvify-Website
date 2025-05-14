@@ -15,7 +15,7 @@ export default function Layout() {
       "/signup",
       "/forget-password",
       "/chatbot",
-      "/quiz",
+      "/Quiz",
       "/result",
       "/recommended-plan",
       "/payment",

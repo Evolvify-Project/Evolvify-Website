@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark, FaComment } from "react-icons/fa";
 import { FiTrash2, FiMoreHorizontal, FiEdit2 } from "react-icons/fi";
@@ -413,79 +414,88 @@ function Community() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <motion.aside
-        initial={{ x: -100, opacity: 0 }}
-        animate={{ x: sidebarOpen ? 0 : -100, opacity: sidebarOpen ? 1 : 0 }}
-        transition={{ duration: 0.3 }}
+      {/* Sidebar: Contains tabs and categories, now using <aside> */}
+      <aside
         className={`fixed inset-y-0 left-0 w-64 p-6 bg-white shadow-lg rounded-r-lg z-20 transform md:transform-none md:static md:w-64 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform duration-300 md:translate-x-0`}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Community Hub</h2>
-          <button
-            className="md:hidden text-gray-600"
-            onClick={() => setSidebarOpen(false)} // تأكيد إغلاق السايد بار
-          >
-            ✕
-          </button>
-        </div>
-        <div className="space-y-8 sticky top-5">
-          <div className="space-y-2">
-            {["My posts", "Saved"].map((tab) => (
-              <motion.button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  if (window.innerWidth < 768) setSidebarOpen(false); // أغلق السايد بار بعد الاختيار في الموبايل
-                }}
-                className={`w-full text-left py-2 px-4 rounded-lg transition-colors duration-200 ${
-                  activeTab === tab
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-700 hover:bg-blue-50"
-                } font-medium`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {tab}
-              </motion.button>
-            ))}
+        <motion.div
+          initial={{ x: -100, opacity: 0 }}
+          animate={{ x: sidebarOpen ? 0 : -100, opacity: sidebarOpen ? 1 : 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-gray-800">Community Hub</h2>
+            <button
+              className="md:hidden text-gray-600 hover:text-red-500 text-lg sm:text-xl transition-transform duration-500 hover:rotate-180"
+              onClick={() => setSidebarOpen(false)} // Closes the sidebar
+            >
+              <i className="fa-solid fa-times"></i>
+            </button>
           </div>
-          <div>
-            <h3 className="font-semibold text-lg mb-3 text-gray-800">
-              Categories
-            </h3>
-            <ul className="space-y-2">
-              {categories.map((cat) => (
-                <motion.li
-                  key={cat.name}
+          <div className="space-y-8 sticky top-5">
+            <div className="space-y-2">
+              {["My posts", "Saved"].map((tab) => (
+                <motion.button
+                  key={tab}
                   onClick={() => {
-                    setSelectedCategory(cat.name);
-                    if (window.innerWidth < 768) setSidebarOpen(false); // أغلق السايد بار بعد اختيار الفئة
+                    setActiveTab(tab);
+                    if (window.innerWidth < 768) setSidebarOpen(false);
                   }}
-                  className={`cursor-pointer py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2 ${
-                    selectedCategory === cat.name
-                      ? "bg-blue-100 text-blue-600 font-semibold"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
+                  className={`w-full text-left py-2 px-4 rounded-lg transition-colors duration-200 ${
+                    activeTab === tab
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-700 hover:bg-blue-50"
+                  } font-medium`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span>{cat.icon}</span>
-                  <span>{cat.name}</span>
-                </motion.li>
+                  {tab}
+                </motion.button>
               ))}
-            </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg mb-3 text-gray-800">
+                Categories
+              </h3>
+              <ul className="space-y-2">
+                {categories.map((cat) => (
+                  <motion.li
+                    key={cat.name}
+                    onClick={() => {
+                      setSelectedCategory(cat.name);
+                      if (window.innerWidth < 768) setSidebarOpen(false);
+                    }}
+                    className={`cursor-pointer py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2 ${
+                      selectedCategory === cat.name
+                        ? "bg-blue-100 text-blue-600 font-semibold"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span>{cat.icon}</span>
+                    <span>{cat.name}</span>
+                  </motion.li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
-      </motion.aside>
+        </motion.div>
+      </aside>
 
-      <main className={`flex-1 p-6 transition-all duration-300 ${sidebarOpen && "overflow-hidden md:ml-64"}`}>
+      <main
+        className={`flex-1 p-6 transition-all duration-300 ${
+          sidebarOpen && "overflow-hidden md:ml-64"
+        }`}
+      >
+        {/* Mobile Menu Button: Opens the sidebar with a hamburger icon */}
         <button
-          className="md:hidden mb-4 px-4 py-2 bg-blue-600 text-white rounded-lg"
-          onClick={() => setSidebarOpen(true)} // افتح السايد بار بالزر في الموبايل
+          className="md:hidden mb-4 px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2"
+          onClick={() => setSidebarOpen(true)} // Opens the sidebar
         >
-          ☰ Menu
+          <i className="fa-solid fa-bars"></i> Menu
         </button>
         {error && (
           <motion.p
@@ -735,7 +745,7 @@ function Post({
             <motion.button
               onClick={handleEditPost}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
-              whileHover={{ scale: 1.05}}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               Save
@@ -746,7 +756,7 @@ function Post({
                 setEditPostContent(post.content);
               }}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
-              whileHover={{ scale: 1.05}}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               Cancel
@@ -998,7 +1008,7 @@ function Comment({
         <motion.button
           onClick={() => setReplyInputOpen(!replyInputOpen)}
           className="flex items-center gap-1 text-gray-600 hover:text-blue-500 transition-colors duration-200"
-          whileHover={{ scale: 1.1}}
+          whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
           <FaComment />
