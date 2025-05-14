@@ -830,16 +830,6 @@ const InterviewTestPage = () => {
           </div>
         </div>
       </div>
-      <div className="text-right mt-4">
-        <Link
-          to="/summary"
-          className="text-indigo-600 hover:text-indigo-800 transition"
-        >
-          <button className="px-6 py-2 bg-gradient-to-r from-indigo-900 to-blue-600 rounded-full text-white hover:opacity-90 transition duration-200">
-            View Session Summary →
-          </button>
-        </Link>
-      </div>
     </div>
   );
 };
