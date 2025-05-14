@@ -2,8 +2,6 @@ import React, { useRef, useState, useEffect } from "react";
 import {
   LineChart,
   Line,
-  ScatterChart,
-  Scatter,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -36,70 +34,8 @@ const presentationTopics = [
   "Conclude with Your Vision.",
 ];
 
-const interpolateFrameEmotions = (
-  frameEmotions,
-  videoDuration,
-  pointsPerSecond = 10
-) => {
-  if (
-    !frameEmotions ||
-    !Array.isArray(frameEmotions) ||
-    frameEmotions.length === 0
-  ) {
-    return [];
-  }
-
-  const interpolatedData = [];
-  const totalPoints = Math.floor(videoDuration * pointsPerSecond);
-  const step = videoDuration / (totalPoints - 1);
-
-  for (let i = 0; i < totalPoints; i++) {
-    const targetTime = i * step;
-    let prevFrame = frameEmotions[0];
-    let nextFrame = frameEmotions[frameEmotions.length - 1];
-    let found = false;
-
-    for (let j = 0; j < frameEmotions.length - 1; j++) {
-      if (
-        frameEmotions[j].time <= targetTime &&
-        frameEmotions[j + 1].time >= targetTime
-      ) {
-        prevFrame = frameEmotions[j];
-        nextFrame = frameEmotions[j + 1];
-        found = true;
-        break;
-      }
-    }
-
-    if (!found && targetTime < frameEmotions[0].time) {
-      nextFrame = frameEmotions[0];
-    } else if (
-      !found &&
-      targetTime > frameEmotions[frameEmotions.length - 1].time
-    ) {
-      prevFrame = frameEmotions[frameEmotions.length - 1];
-    }
-
-    const timeDiff = nextFrame.time - prevFrame.time;
-    const weight = timeDiff > 0 ? (targetTime - prevFrame.time) / timeDiff : 0;
-    const interpolatedConfidence =
-      prevFrame.confidence +
-      (nextFrame.confidence - prevFrame.confidence) * weight;
-
-    const emotion =
-      targetTime - prevFrame.time < nextFrame.time - targetTime
-        ? prevFrame.emotion
-        : nextFrame.emotion;
-
-    interpolatedData.push({
-      time: targetTime,
-      emotion: emotion,
-      confidence: interpolatedConfidence,
-    });
-  }
-
-  return interpolatedData;
-};
+const totalTopics = presentationTopics.length;
+const TOPIC_DURATION = 30; // Duration per topic in seconds
 
 const PresentationTestPage = () => {
   const videoRef = useRef(null);
@@ -112,11 +48,10 @@ const PresentationTestPage = () => {
   const [error, setError] = useState(null);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [cameraStream, setCameraStream] = useState(null);
-  const [frameEmotions, setFrameEmotions] = useState([]);
   const [videoDuration, setVideoDuration] = useState(0);
-  const [currentTopic, setCurrentTopic] = useState(0);
-  const [topicTimer, setTopicTimer] = useState(30);
   const [countdown, setCountdown] = useState(null);
+  const [currentTopic, setCurrentTopic] = useState(0);
+  const [topicTimer, setTopicTimer] = useState(TOPIC_DURATION);
   const [uploadStatus, setUploadStatus] = useState({
     message: "",
     progress: 0,
@@ -174,6 +109,39 @@ const PresentationTestPage = () => {
     }
   };
 
+  // UseEffect to handle the topic timer and synchronize countdown
+  useEffect(() => {
+    if (!recording) return;
+
+    const interval = setInterval(() => {
+      setTopicTimer((prev) => {
+        if (prev <= 0) {
+          const nextTopic = currentTopic + 1;
+          if (nextTopic < presentationTopics.length) {
+            setCurrentTopic(nextTopic);
+            return TOPIC_DURATION; // Reset timer for the next topic
+          } else {
+            // Reached the last topic, stop the recording
+            if (mediaRecorder?.state === "recording") {
+              mediaRecorder.stop();
+            }
+            return 0;
+          }
+        }
+        return prev - 1;
+      });
+
+      // Calculate total remaining time based on current topic and topicTimer
+      setCountdown(() => {
+        const remainingTopics = totalTopics - currentTopic - 1;
+        const remainingTime = remainingTopics * TOPIC_DURATION + topicTimer;
+        return remainingTime > 0 ? remainingTime : 0;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval); // Cleanup on unmount or when recording stops
+  }, [recording, currentTopic, mediaRecorder, topicTimer, totalTopics]);
+
   const startPresentation = async () => {
     if (cameraActive || loading || recording || isUploading) return;
 
@@ -185,7 +153,7 @@ const PresentationTestPage = () => {
     setError(null);
     setRecording(true);
     setCurrentTopic(0);
-    setTopicTimer(30);
+    setTopicTimer(TOPIC_DURATION);
     setIsRecordingFinished(false);
     showMessage("Presentation started...");
 
@@ -248,7 +216,7 @@ const PresentationTestPage = () => {
         setRecording(false);
         setCountdown(null);
         setCurrentTopic(0);
-        setTopicTimer(30);
+        setTopicTimer(TOPIC_DURATION);
         showMessage("Presentation finished. Please submit or cancel.");
         if (chunks.length > 0) {
           const blob = new Blob(chunks, { type: mimeType });
@@ -258,7 +226,7 @@ const PresentationTestPage = () => {
           }
           setRecordedBlob(blob);
           setRecordedVideoUrl(URL.createObjectURL(blob));
-          setVideoDuration(presentationTopics.length * 30);
+          setVideoDuration(totalTopics * TOPIC_DURATION);
           setIsRecordingFinished(true);
           chunks.length = 0;
         }
@@ -267,28 +235,7 @@ const PresentationTestPage = () => {
       recorder.start(100);
       console.log("MediaRecorder started with timeslice of 100ms");
 
-      let totalTimeLeft = presentationTopics.length * 30;
-      setCountdown(totalTimeLeft);
-
-      const topicInterval = setInterval(() => {
-        setTopicTimer((prev) => {
-          const newTimer = prev - 1;
-          if (newTimer <= 0) {
-            setCurrentTopic((prevTopic) => {
-              const nextTopic = prevTopic + 1;
-              if (nextTopic >= presentationTopics.length) {
-                clearInterval(topicInterval);
-                if (recorder.state === "recording") recorder.stop();
-                return prevTopic;
-              }
-              return nextTopic;
-            });
-            return 30;
-          }
-          return newTimer;
-        });
-        setCountdown((prev) => prev - 1);
-      }, 1000);
+      setCountdown(totalTopics * TOPIC_DURATION);
     } catch (err) {
       setError("Failed to start presentation: " + err.message);
       setRecording(false);
@@ -321,7 +268,7 @@ const PresentationTestPage = () => {
     setRecording(false);
     setCountdown(null);
     setCurrentTopic(0);
-    setTopicTimer(30);
+    setTopicTimer(TOPIC_DURATION);
     setIsRecordingFinished(false);
     showMessage("Camera stopped");
   };
@@ -342,7 +289,6 @@ const PresentationTestPage = () => {
     setRecordedBlob(null);
     stopCamera();
     resetSession();
-    setFrameEmotions([]);
     setVideoDuration(0);
     setUploadStatus({ message: "", progress: 0 });
     setIsRecordingFinished(false);
@@ -406,6 +352,10 @@ const PresentationTestPage = () => {
           response.statusText
         );
 
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
         setUploadStatus({ message: "Analyzing emotions...", progress: 50 });
 
         const contentType = response.headers.get("content-type");
@@ -424,7 +374,7 @@ const PresentationTestPage = () => {
             }
           }
           throw new Error(
-            "Invalid response from server: " + text.slice(0, 100)
+            "Invalid response format from server: " + text.slice(0, 100)
           );
         }
 
@@ -433,8 +383,7 @@ const PresentationTestPage = () => {
         const data = await response.json();
         console.log("API response data:", data);
         if (data.error) {
-          setError("API Error: " + data.error);
-          return;
+          throw new Error("API Error: " + data.error);
         }
 
         const frameData = data.frame_data.map((frame, index) => ({
@@ -492,33 +441,11 @@ const PresentationTestPage = () => {
           ).toFixed(1),
         }));
 
-        const emotions = data.emotions;
-        const frameEmotionData = [];
-        let frameIndex = 0;
-        for (const [emotion, confidences] of Object.entries(emotions)) {
-          confidences.forEach((confidence) => {
-            const frameTime =
-              frameData[frameIndex]?.time ||
-              frameIndex *
-                (data.video_duration /
-                  Object.values(emotions).reduce(
-                    (sum, arr) => sum + arr.length,
-                    0
-                  ));
-            frameEmotionData.push({
-              time: parseFloat(frameTime.toFixed(1)),
-              emotion: emotion,
-              confidence: confidence,
-            });
-            frameIndex++;
-          });
-        }
-        setFrameEmotions(frameEmotionData);
-
         setUploadStatus({ message: "Analysis completed!", progress: 100 });
         showMessage("Analysis completed successfully!", "success");
         return;
       } catch (err) {
+        console.error("Upload attempt", attempt, "failed:", err.message);
         if (attempt === retries) {
           setError(
             `Failed to analyze video after ${retries} attempts: ${
@@ -532,6 +459,12 @@ const PresentationTestPage = () => {
             "error"
           );
           setUploadStatus({ message: "Analysis failed.", progress: 0 });
+        } else {
+          setUploadStatus({
+            message: `Retry ${attempt + 1} of ${retries}...`,
+            progress: 30,
+          });
+          await new Promise((resolve) => setTimeout(resolve, 5000));
         }
       } finally {
         setLoading(false);
@@ -569,36 +502,6 @@ const PresentationTestPage = () => {
     };
   }, [recordedVideoUrl]);
 
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length && payload[0].payload) {
-      const confidence = payload[0].payload.confidence;
-      const displayConfidence =
-        typeof confidence === "number" && !isNaN(confidence)
-          ? confidence.toFixed(1)
-          : "N/A";
-      return (
-        <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-md">
-          <p className="text-gray-800 font-semibold">
-            Time: {typeof label === "number" ? label.toFixed(1) : "N/A"}s
-          </p>
-          <p className="text-gray-700">
-            Emotion:{" "}
-            <span className="font-medium text-indigo-600">
-              {payload[0].payload.emotion || "Unknown"}
-            </span>
-          </p>
-          <p className="text-gray-700">
-            Confidence:{" "}
-            <span className="font-medium text-green-600">
-              {displayConfidence}%
-            </span>
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
   const LineChartTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -622,11 +525,6 @@ const PresentationTestPage = () => {
     }
     return null;
   };
-
-  const interpolatedFrameEmotions = interpolateFrameEmotions(
-    frameEmotions,
-    videoDuration
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 text-gray-800 font-sans">
@@ -703,28 +601,18 @@ const PresentationTestPage = () => {
                     className="mr-2 text-blue-500"
                   />
                   <h3 className="font-semibold text-lg text-gray-800">
-                    Topic {currentTopic + 1}/{presentationTopics.length}
+                    Current Topic (Question {currentTopic + 1} of {totalTopics})
                   </h3>
                 </div>
                 <span className="text-sm text-gray-500">{topicTimer}s</span>
               </div>
-              <p className="text-gray-700">
+              <p className="text-gray-700 mb-4">
                 {presentationTopics[currentTopic]}
               </p>
               <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-blue-500 h-2 rounded-full transition-all duration-1000 ease-linear"
-                  style={{ width: `${(topicTimer / 30) * 100}%` }}
-                ></div>
-              </div>
-              <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
-                <div
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 h-1.5 rounded-full transition-all duration-300"
-                  style={{
-                    width: `${
-                      ((currentTopic + 1) / presentationTopics.length) * 100
-                    }%`,
-                  }}
+                  style={{ width: `${(topicTimer / TOPIC_DURATION) * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -850,97 +738,103 @@ const PresentationTestPage = () => {
             </div>
           </div>
         </div>
-        <div className="md:col-span-3">
-          <div className="min-h-screen bg-gray-100 p-6 text-gray-800 font-sans">
-            <h1 className="text-4xl md:text-5xl font-bold text-center mb-8 text-indigo-800">
-              Session Summary
-            </h1>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
-                <h3 className="text-lg font-semibold text-gray-700">
-                  Confidence
-                </h3>
-                <p className="text-2xl font-bold text-green-600 mt-2">
-                  {summaryStats.confidence}%
-                </p>
-              </div>
-              <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
-                <h3 className="text-lg font-semibold text-gray-700">Anxiety</h3>
-                <p className="text-2xl font-bold text-purple-600 mt-2">
-                  {summaryStats.anxiety}%
-                </p>
-              </div>
-              <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
-                <h3 className="text-lg font-semibold text-gray-700">Stress</h3>
-                <p className="text-2xl font-bold text-red-600 mt-2">
-                  {summaryStats.stress}%
-                </p>
-              </div>
-            </div>
-            <div className="mt-8 bg-white p-5 rounded-xl shadow-md border border-gray-100">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">
-                Emotional Trends
-              </h2>
-              <ResponsiveContainer width="100%" height={350}>
-                <LineChart data={emotionData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                  <XAxis dataKey="time" stroke="#666" />
-                  <YAxis stroke="#666" />
-                  <Tooltip
-                    contentStyle={{
-                      background: "#fff",
-                      border: "1px solid #ddd",
-                    }}
-                  />
-                  <Legend wrapperStyle={{ paddingTop: "10px" }} />
-                  <Line
-                    type="monotone"
-                    dataKey="stress"
-                    stroke="#ff4d4f"
-                    name="Stress"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="anxiety"
-                    stroke="#b37feb"
-                    name="Anxiety"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="confidence"
-                    stroke="#52c41a"
-                    name="Confidence"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="mt-8 bg-gray-50 p-5 rounded-xl shadow-md border border-gray-200">
-              <h3 className="text-2xl font-semibold mb-4 text-gray-800">
-                Key Insights
+        <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
+              <h3 className="text-lg font-semibold text-gray-700">
+                Confidence
               </h3>
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-indigo-600 rounded-full mr-2"></span>
-                  Primary Emotion: {summaryStats.primaryEmotion}
-                </li>
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-red-600 rounded-full mr-2"></span>
-                  Peak Stress Level: {summaryStats.peakStress}%
-                </li>
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
-                  Emotional Stability: {summaryStats.emotionalStability}%
-                </li>
-              </ul>
+              <p className="text-2xl font-bold text-green-600 mt-2">
+                {summaryStats.confidence}%
+              </p>
+            </div>
+            <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
+              <h3 className="text-lg font-semibold text-gray-700">Anxiety</h3>
+              <p className="text-2xl font-bold text-purple-600 mt-2">
+                {summaryStats.anxiety}%
+              </p>
+            </div>
+            <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
+              <h3 className="text-lg font-semibold text-gray-700">Stress</h3>
+              <p className="text-2xl font-bold text-red-600 mt-2">
+                {summaryStats.stress}%
+              </p>
             </div>
           </div>
+          <div className="mt-8 bg-white p-5 rounded-xl shadow-md border border-gray-100">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              Emotional Trends
+            </h2>
+            <ResponsiveContainer width="100%" height={350}>
+              <LineChart data={emotionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis dataKey="time" stroke="#666" />
+                <YAxis stroke="#666" />
+                <Tooltip
+                  content={<LineChartTooltip />}
+                  contentStyle={{
+                    background: "#fff",
+                    border: "1px solid #ddd",
+                  }}
+                />
+                <Legend wrapperStyle={{ paddingTop: "10px" }} />
+                <Line
+                  type="monotone"
+                  dataKey="stress"
+                  stroke="#ff4d4f"
+                  name="Stress"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="anxiety"
+                  stroke="#b37feb"
+                  name="Anxiety"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="confidence"
+                  stroke="#52c41a"
+                  name="Confidence"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-8 bg-gray-50 p-5 rounded-xl shadow-md border border-gray-200">
+            <h3 className="text-2xl font-semibold mb-4 text-gray-800">
+              Key Insights
+            </h3>
+            <ul className="space-y-3 text-gray-700">
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-indigo-600 rounded-full mr-2"></span>
+                Primary Emotion: {summaryStats.primaryEmotion}
+              </li>
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-red-600 rounded-full mr-2"></span>
+                Peak Stress Level: {summaryStats.peakStress}%
+              </li>
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                Emotional Stability: {summaryStats.emotionalStability}%
+              </li>
+            </ul>
+          </div>
         </div>
+      </div>
+      <div className="text-right mt-4">
+        <Link
+          to="/summary"
+          className="text-indigo-600 hover:text-indigo-800 transition"
+        >
+          <button className="px-6 py-2 bg-gradient-to-r from-indigo-900 to-blue-600 rounded-full text-white hover:opacity-90 transition duration-200">
+            View Session Summary →
+          </button>
+        </Link>
       </div>
     </div>
   );
