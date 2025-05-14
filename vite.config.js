@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: "./",
   server: {
+    historyApiFallback: true,
     proxy: {
       "/Images": {
         target: "https://evolvify.runasp.net",
