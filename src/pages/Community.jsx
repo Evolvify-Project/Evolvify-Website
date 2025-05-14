@@ -60,7 +60,7 @@ function Community() {
       }));
       setPosts(fetchedPosts);
     } catch (err) {
-      setError("Failed to fetch posts");
+      setError("Failed to fetch posts!");
       console.error(err);
     } finally {
       setLoading(false);
