@@ -1,25 +1,92 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import logo from "../../assets/images/logo.png";
+import placeHolderImg from "../../assets/images/placeholder-vector.jpg";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
+import axios from "axios";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State للدروب داون
+  const [profileImage, setProfileImage] = useState(placeHolderImg); // صورة ديفولت
   const navigate = useNavigate();
+  const dropdownRef = useRef(null); // Ref للـ dropdown والزرار
 
   const toggleMenu = () => setIsOpen(!isOpen);
+  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
+  // دالة للتحقق من صحة الرابط
+  const isValidUrl = (url) => {
+    try {
+      new URL(url);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // التحقق من تسجيل الدخول وجلب صورة البروفايل
   useEffect(() => {
     const token = localStorage.getItem("userToken");
     setIsLoggedIn(!!token);
+
+    // جلب صورة البروفايل من الـ API
+    if (token) {
+      axios
+        .get("https://evolvify.runasp.net/api/Accounts/userProfile", {
+          headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          // افتراضي إن الـ API بيرجّع الصورة في حقل imageUrl
+          let imageUrl = response.data?.imageUrl;
+          // لو الرابط مش كامل (relative)، نضيف الـ base URL
+          if (imageUrl && !isValidUrl(imageUrl)) {
+            imageUrl = `https://evolvify.runasp.net${imageUrl}`; // إضافة الـ base URL
+          }
+          // لو الرابط صحيح، نستخدمه، وإلا نستخدم الصورة الديفولت
+          if (imageUrl && isValidUrl(imageUrl)) {
+            setProfileImage(imageUrl);
+          } else {
+            setProfileImage(placeHolderImg);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching profile image:", error);
+          setProfileImage(placeHolderImg); // لو حصل خطأ، نستخدم الصورة الديفولت
+        });
+    }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("userToken");
     setIsLoggedIn(false);
+    setProfileImage(placeHolderImg); // إعادة الصورة للديفولت بعد الـ Logout
+    setIsDropdownOpen(false); // إغلاق الدروب داون بعد الـ Logout
     navigate("./login");
   };
+
+  // إغلاق الدروب داون عند الضغط خارج المنطقة
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    // إضافة event listener عند فتح الدروب داون
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // إزالة event listener عند إغلاق الدروب داون
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   return (
     <nav className="p-5 shadow-md bg-slate-100">
@@ -36,7 +103,6 @@ export default function Navbar() {
             "Practice",
             "Community",
             "Chatbot",
-            "Dashboard",
             "EvolviSense",
           ].map((item) => (
             <li key={item}>
@@ -58,17 +124,61 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Right Side: Register or User Icon */}
+        {/* Right Side: User Icon or Dashboard and Logout */}
         <div className="hidden md:block">
           {isLoggedIn ? (
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleLogout}
-                className="text-sm text-gray-600 hover:underline"
-              >
-                Logout
-              </button>
-              <User className="text-sky-600 cursor-pointer" />
+            <div className="relative" ref={dropdownRef}>
+              <div className="flex items-center gap-2">
+                <button
+                  className="w-10 h-10 rounded-full overflow-hidden border-2 border-sky-500 focus:outline-none"
+                  onClick={toggleDropdown}
+                >
+                  <img
+                    src={profileImage}
+                    alt="User profile"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = placeHolderImg; // صورة ديفولت لو الصورة فشلت في التحميل
+                    }}
+                  />
+                </button>
+                <ChevronDown
+                  size={23}
+                  className={`text-[#233A66] cursor-pointer transition-transform duration-200 ${
+                    isDropdownOpen ? "rotate-180" : ""
+                  }`}
+                  onClick={toggleDropdown}
+                />
+              </div>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-[#233A66] border border-gray-200 rounded-md shadow-lg z-10">
+                  <ul className="py-1">
+                    <li>
+                      <NavLink
+                        to="./dashboard"
+                        className="block px-4 py-2 rounded-md text-md text-white hover:bg-sky-950"
+                        onClick={() => {
+                          setIsOpen(false);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        Dashboard
+                      </NavLink>
+                    </li>
+                    <li>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 rounded-md text-md text-white hover:bg-red-500"
+                      >
+                        <i className="fa-solid fa-right-from-bracket mr-4 sm:mr-2"></i>
+                        Logout
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex gap-2">
@@ -105,7 +215,6 @@ export default function Navbar() {
               "Practice",
               "Community",
               "Chatbot",
-              "Dashboard",
               "EvolviSense",
             ].map((item) => (
               <li key={item}>
@@ -143,6 +252,31 @@ export default function Navbar() {
                       Login
                     </button>
                   </Link>
+                </li>
+              </>
+            )}
+            {isLoggedIn && (
+              <>
+                <li>
+                  <NavLink
+                    to="./dashboard"
+                    className={({ isActive }) =>
+                      isActive
+                        ? "text-sky-600 block pb-1 border-b border-sky-500"
+                        : "text-gray-800 block pb-1"
+                    }
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Dashboard
+                  </NavLink>
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left text-gray-800 block pb-1"
+                  >
+                    Logout
+                  </button>
                 </li>
               </>
             )}

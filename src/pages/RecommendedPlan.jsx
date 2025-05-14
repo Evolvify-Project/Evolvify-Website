@@ -11,10 +11,9 @@ const RecommendedPlan = () => {
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  // صورة احتياطية خارجية
-  const fallbackImage = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150&q=80";
+  const fallbackImage =
+    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150&q=80";
 
-  // دالة لجلب البيانات من الـ API مع retry logic
   const fetchRecommendedCourses = async () => {
     setLoading(true);
     try {
@@ -33,25 +32,24 @@ const RecommendedPlan = () => {
         }
       );
 
-      // التحقق من وجود بيانات
       if (!response.data.data || response.data.data.length === 0) {
         throw new Error("No recommended courses found.");
       }
 
-      // تحويل البيانات لتناسب الكومبوننت
       const fetchedSkills = response.data.data.map((skill) => ({
         category: `${skill.skill} Skills`,
-        level: skill.level, // إضافة مستوى المهارة
-        courses: skill.courses.length > 0
-          ? skill.courses.map((course) => ({
-              id: course.id,
-              name: course.title,
-              level: course.level,
-              image: course.imageUrl || fallbackImage,
-              description: course.description,
-              duration: course.duration,
-            }))
-          : [],
+        level: skill.level,
+        courses:
+          Array.isArray(skill.courses) && skill.courses.length > 0
+            ? skill.courses.map((course) => ({
+                id: course.id,
+                name: course.title,
+                level: course.level,
+                image: course.imageUrl || fallbackImage,
+                description: course.description,
+                duration: course.duration,
+              }))
+            : [],
       }));
 
       setSkills(fetchedSkills);
@@ -59,7 +57,7 @@ const RecommendedPlan = () => {
     } catch (err) {
       if (retryCount < 3) {
         setTimeout(() => {
-          setRetryCount(retryCount + 1);
+          setRetryCount((prev) => prev + 1);
           fetchRecommendedCourses();
         }, 2000);
       } else {
@@ -89,12 +87,12 @@ const RecommendedPlan = () => {
         .toLowerCase()
         .includes(skillCategory.split(" ")[0].toLowerCase())
     );
-    return skillResult ? skillResult.level : null; // تعديل من skillLevel لـ level
+    return skillResult ? skillResult.level : null;
   };
 
   const getRecommendedCourse = (skillCategory, skillLevel, courses) => {
     const userLevel = getUserLevel(skillCategory);
-    if (!userLevel || userLevel === skillLevel) return courses.slice(0, 3); // نرجع أول 3 كورسات لو المستوى متطابق
+    if (!userLevel || userLevel === skillLevel) return courses.slice(0, 3);
     return courses.filter((course) => course.level === userLevel).slice(0, 3);
   };
 
@@ -111,36 +109,55 @@ const RecommendedPlan = () => {
     }
   };
 
-  // تقسيم المهارات إلى مجموعات مع ضمان التناسق
-  const firstRowSkills = skills.slice(0, 2);
-  const secondRowSkills = skills.slice(2, 4);
-  const thirdRowSkills = skills.slice(4, 6);
-  const allSkillsGroups = [
-    firstRowSkills,
-    secondRowSkills,
-    thirdRowSkills.filter(Boolean),
-  ].filter((group) => group.length > 0);
+  const redistributeSkills = (skillsArray) => {
+    if (!Array.isArray(skillsArray)) return [];
 
-  // Loading Skeleton Component
+    const maxPerRow = 3;
+    const maxRows = 5;
+    const totalToShow = maxPerRow * maxRows;
+
+    let limitedSkills = skillsArray.slice(0, totalToShow + 3);
+    let rows = [];
+
+    for (let i = 0; i < limitedSkills.length; i += maxPerRow) {
+      rows.push(limitedSkills.slice(i, i + maxPerRow));
+    }
+
+    const lastRow = rows[rows.length - 1];
+    if (lastRow && lastRow.length < maxPerRow) {
+      rows.pop();
+      lastRow.forEach((card, index) => {
+        const targetIndex = rows.length - 2 + index;
+        if (rows[targetIndex]) {
+          rows[targetIndex].push(card);
+        }
+      });
+    }
+
+    return rows.slice(0, maxRows);
+  };
+
+  const skillsGroups = redistributeSkills(skills);
+
   const LoadingSkeleton = () => (
-    <div className="w-full max-w-5xl space-y-10">
-      {Array(2)
+    <div className="w-full max-w-6xl space-y-10">
+      {Array(5)
         .fill()
         .map((_, groupIndex) => (
           <div
             key={groupIndex}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-4xl mx-auto"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-center"
           >
-            {Array(2)
+            {Array(3)
               .fill()
               .map((_, index) => (
                 <div
                   key={index}
-                  className="w-full max-w-md animate-pulse"
+                  className="w-full max-w-[300px] animate-pulse mx-auto"
                 >
                   <div className="h-6 bg-gray-200 rounded mb-4"></div>
-                  <div className="bg-white rounded-2xl shadow-md w-full h-[350px]">
-                    <div className="w-full h-[200px] bg-gray-200 rounded-t-xl"></div>
+                  <div className="bg-white rounded-2xl shadow-md w-full h-[420px]">
+                    <div className="w-full h-[250px] bg-gray-200 rounded-t-xl"></div>
                     <div className="p-4 space-y-2">
                       <div className="h-5 bg-gray-200 rounded w-3/4 mx-auto"></div>
                       <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
@@ -189,17 +206,15 @@ const RecommendedPlan = () => {
   return (
     <section className="min-h-screen w-full bg-slate-100 flex flex-col">
       <div className="flex-1 flex flex-col items-center px-4 py-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-black mb-6 sm:mb-8 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#233A66] mb-6 sm:mb-8 text-center">
           Your Recommended Plan
         </h1>
 
-        <div className="w-full max-w-5xl space-y-10">
-          {allSkillsGroups.map((skillGroup, groupIndex) => (
+        <div className="w-full max-w-6xl space-y-10">
+          {skillsGroups.map((skillGroup, groupIndex) => (
             <div
               key={groupIndex}
-              className={`grid grid-cols-1 ${
-                skillGroup.length === 1 ? "sm:grid-cols-1" : "sm:grid-cols-2"
-              } gap-5 max-w-4xl mx-auto`}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-center"
             >
               {skillGroup.map((skill, index) => {
                 const recommendedCourses = getRecommendedCourse(
@@ -212,17 +227,17 @@ const RecommendedPlan = () => {
                     key={index}
                     className="space-y-2 w-full flex justify-center"
                   >
-                    <div className="w-full max-w-md">
+                    <div className="w-full max-w-[300px]">
                       <h2 className="text-xl font-semibold text-[#233A66] text-center mb-4">
-                        {skill.category}
+                        {skill.category || "Placeholder"}
                       </h2>
                       {(recommendedCourses.length > 0
                         ? recommendedCourses
-                        : skill.courses
+                        : skill.courses || []
                       ).map((course, idx) => (
                         <div
                           key={idx}
-                          className="bg-white rounded-2xl shadow-md flex flex-col justify-between items-center w-full h-[350px] max-h-[350px] transform transition-transform duration-300 hover:scale-105 hover:shadow-lg mb-5"
+                          className="bg-white rounded-2xl shadow-md flex flex-col justify-between items-center w-full h-[420px] max-h-[420px] min-h-[420px] transform transition-transform duration-300 hover:scale-105 hover:shadow-lg mb-5"
                         >
                           <div className="w-full h-[250px] relative">
                             <img
@@ -230,7 +245,6 @@ const RecommendedPlan = () => {
                               alt={course.name}
                               className="absolute top-0 left-0 w-full h-full object-cover rounded-t-xl"
                               onError={(e) => {
-                                console.log(`Failed to load image: ${course.image}`);
                                 e.target.src = fallbackImage;
                               }}
                             />
@@ -242,14 +256,14 @@ const RecommendedPlan = () => {
                             <span
                               className={`text-md ${getLevelTextColor(
                                 course.level
-                              )}`}
+                              )} font-semibold`}
                             >
                               {course.level}
                             </span>
                           </div>
                         </div>
                       ))}
-                      {skill.courses.length === 0 && (
+                      {(!skill.courses || skill.courses.length === 0) && (
                         <div className="bg-white p-4 rounded-xl shadow-md text-center">
                           <p className="text-gray-500">
                             No courses available for this skill.
