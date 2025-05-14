@@ -109,7 +109,7 @@ export default function Navbar() {
               <NavLink
                 to={
                   item === "EvolviSense"
-                    ? "./emotion-analysis"
+                    ? "./presentation-test"
                     : `./${item.toLowerCase()}`
                 }
                 className={({ isActive }) =>
@@ -221,7 +221,7 @@ export default function Navbar() {
                 <NavLink
                   to={
                     item === "EvolviSense"
-                      ? "./emotion-analysis"
+                      ? "./presentation-test"
                       : `./${item.toLowerCase()}`
                   }
                   className={({ isActive }) =>

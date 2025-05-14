@@ -9,7 +9,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFaceSmile,
@@ -26,18 +25,14 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useEmotion } from "./EmotionContext";
 
-const presentationTopics = [
-  "Introduce Your Topic.",
-  "Explain Your Key Points.",
-  "Discuss Potential Challenges.",
-  "Share Your Solution or Approach.",
-  "Conclude with Your Vision.",
-];
-
-const totalTopics = presentationTopics.length;
-const TOPIC_DURATION = 30; // Duration per topic in seconds
-
-const PresentationTestPage = () => {
+const EvolviSense = ({
+  prompts,
+  testTypeLabel,
+  testTypeHeading,
+  promptLabel,
+  promptSingular,
+  durationPerPrompt,
+}) => {
   const videoRef = useRef(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -50,8 +45,8 @@ const PresentationTestPage = () => {
   const [cameraStream, setCameraStream] = useState(null);
   const [videoDuration, setVideoDuration] = useState(0);
   const [countdown, setCountdown] = useState(null);
-  const [currentTopic, setCurrentTopic] = useState(0);
-  const [topicTimer, setTopicTimer] = useState(TOPIC_DURATION);
+  const [currentPrompt, setCurrentPrompt] = useState(0);
+  const [promptTimer, setPromptTimer] = useState(durationPerPrompt);
   const [uploadStatus, setUploadStatus] = useState({
     message: "",
     progress: 0,
@@ -65,6 +60,8 @@ const PresentationTestPage = () => {
     setSummaryStats,
     resetSession,
   } = useEmotion();
+
+  const totalPrompts = prompts.length;
 
   const showMessage = (text, type = "info") => {
     setMessage({ text, type });
@@ -84,7 +81,6 @@ const PresentationTestPage = () => {
       }
       return true;
     } catch (err) {
-      console.error("Camera permission check error:", err);
       setError("Error checking camera permission: " + err.message);
       return false;
     }
@@ -103,25 +99,22 @@ const PresentationTestPage = () => {
       }
       return true;
     } catch (err) {
-      console.error("Microphone permission check error:", err);
       setError("Error checking microphone permission: " + err.message);
       return false;
     }
   };
 
-  // UseEffect to handle the topic timer and synchronize countdown
+  // Timer effect
   useEffect(() => {
     if (!recording) return;
-
     const interval = setInterval(() => {
-      setTopicTimer((prev) => {
+      setPromptTimer((prev) => {
         if (prev <= 0) {
-          const nextTopic = currentTopic + 1;
-          if (nextTopic < presentationTopics.length) {
-            setCurrentTopic(nextTopic);
-            return TOPIC_DURATION; // Reset timer for the next topic
+          const nextPrompt = currentPrompt + 1;
+          if (nextPrompt < prompts.length) {
+            setCurrentPrompt(nextPrompt);
+            return durationPerPrompt;
           } else {
-            // Reached the last topic, stop the recording
             if (mediaRecorder?.state === "recording") {
               mediaRecorder.stop();
             }
@@ -130,42 +123,43 @@ const PresentationTestPage = () => {
         }
         return prev - 1;
       });
-
-      // Calculate total remaining time based on current topic and topicTimer
       setCountdown(() => {
-        const remainingTopics = totalTopics - currentTopic - 1;
-        const remainingTime = remainingTopics * TOPIC_DURATION + topicTimer;
+        const remainingPrompts = totalPrompts - currentPrompt - 1;
+        const remainingTime =
+          remainingPrompts * durationPerPrompt + promptTimer;
         return remainingTime > 0 ? remainingTime : 0;
       });
     }, 1000);
+    return () => clearInterval(interval);
+  }, [
+    recording,
+    currentPrompt,
+    mediaRecorder,
+    promptTimer,
+    totalPrompts,
+    durationPerPrompt,
+    prompts.length,
+  ]);
 
-    return () => clearInterval(interval); // Cleanup on unmount or when recording stops
-  }, [recording, currentTopic, mediaRecorder, topicTimer, totalTopics]);
-
-  const startPresentation = async () => {
+  const startTest = async () => {
     if (cameraActive || loading || recording || isUploading) return;
-
     const cameraAllowed = await checkCameraPermission();
     const micAllowed = await checkMicrophonePermission();
     if (!cameraAllowed || !micAllowed) return;
-
     setLoading(true);
     setError(null);
     setRecording(true);
-    setCurrentTopic(0);
-    setTopicTimer(TOPIC_DURATION);
+    setCurrentPrompt(0);
+    setPromptTimer(durationPerPrompt);
     setIsRecordingFinished(false);
-    showMessage("Presentation started...");
-
+    showMessage(`${testTypeLabel} started...`);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
-
       if (!videoRef.current) {
         throw new Error(
           "Video element not found. Please refresh the page and try again."
         );
       }
-
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1280 },
@@ -174,19 +168,14 @@ const PresentationTestPage = () => {
         },
         audio: true,
       });
-      console.log("Stream acquired:", stream);
-
       videoRef.current.srcObject = stream;
       setCameraStream(stream);
       setCameraActive(true);
-
       videoRef.current.onloadedmetadata = () => {
         videoRef.current.play().catch((err) => {
-          console.error("Video play error:", err);
           setError("Failed to play video stream: " + err.message);
         });
       };
-
       let mimeType = "video/mp4";
       const mimeTypes = [
         "video/mp4;codecs=h264,aac",
@@ -196,28 +185,24 @@ const PresentationTestPage = () => {
       for (const type of mimeTypes) {
         if (MediaRecorder.isTypeSupported(type)) {
           mimeType = type;
-          console.log("Selected MIME type:", mimeType);
           break;
         }
       }
-
       const recorder = new MediaRecorder(stream, {
         mimeType,
         videoBitsPerSecond: 2500000,
       });
       setMediaRecorder(recorder);
       const chunks = [];
-
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunks.push(e.data);
       };
-
       recorder.onstop = () => {
         setRecording(false);
         setCountdown(null);
-        setCurrentTopic(0);
-        setTopicTimer(TOPIC_DURATION);
-        showMessage("Presentation finished. Please submit or cancel.");
+        setCurrentPrompt(0);
+        setPromptTimer(durationPerPrompt);
+        showMessage(`${testTypeLabel} finished. Please submit or cancel.`);
         if (chunks.length > 0) {
           const blob = new Blob(chunks, { type: mimeType });
           if (blob.size > 100 * 1024 * 1024) {
@@ -226,21 +211,19 @@ const PresentationTestPage = () => {
           }
           setRecordedBlob(blob);
           setRecordedVideoUrl(URL.createObjectURL(blob));
-          setVideoDuration(totalTopics * TOPIC_DURATION);
+          setVideoDuration(totalPrompts * durationPerPrompt);
           setIsRecordingFinished(true);
           chunks.length = 0;
         }
       };
-
       recorder.start(100);
-      console.log("MediaRecorder started with timeslice of 100ms");
-
-      setCountdown(totalTopics * TOPIC_DURATION);
+      setCountdown(totalPrompts * durationPerPrompt);
     } catch (err) {
-      setError("Failed to start presentation: " + err.message);
+      setError(
+        `Failed to start ${testTypeLabel.toLowerCase()}: ` + err.message
+      );
       setRecording(false);
       setCountdown(null);
-      console.error("Presentation Error:", err);
     } finally {
       setLoading(false);
     }
@@ -248,27 +231,22 @@ const PresentationTestPage = () => {
 
   const stopCamera = () => {
     if (!cameraActive && !recording) return;
-
     if (mediaRecorder && mediaRecorder.state === "recording") {
       mediaRecorder.stop();
-      console.log("MediaRecorder stopped");
     }
-
     if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
       setCameraStream(null);
     }
-
     if (videoRef.current) {
       videoRef.current.srcObject = null;
       videoRef.current.pause();
     }
-
     setCameraActive(false);
     setRecording(false);
     setCountdown(null);
-    setCurrentTopic(0);
-    setTopicTimer(TOPIC_DURATION);
+    setCurrentPrompt(0);
+    setPromptTimer(durationPerPrompt);
     setIsRecordingFinished(false);
     showMessage("Camera stopped");
   };
@@ -317,24 +295,17 @@ const PresentationTestPage = () => {
       showMessage("An upload is already in progress. Please wait.", "warning");
       return;
     }
-
     setIsUploading(true);
     setLoading(true);
     setError(null);
-    console.log("Starting video upload... Blob size:", videoBlob.size, "bytes");
-
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         setUploadStatus({ message: "Processing video...", progress: 10 });
-
         setUploadStatus({ message: "Uploading video...", progress: 30 });
         const formData = new FormData();
         formData.append("file", videoBlob, "video.mp4");
-        console.log("FormData prepared for attempt:", attempt);
-
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 300000);
-
         const response = await fetch(
           "https://moodydev-EvolviSense.hf.space/analyze-video/",
           {
@@ -343,21 +314,11 @@ const PresentationTestPage = () => {
             signal: controller.signal,
           }
         );
-
         clearTimeout(timeoutId);
-        console.log(
-          "API response received - Status:",
-          response.status,
-          "Status Text:",
-          response.statusText
-        );
-
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
         setUploadStatus({ message: "Analyzing emotions...", progress: 50 });
-
         const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
           const text = await response.text();
@@ -377,15 +338,11 @@ const PresentationTestPage = () => {
             "Invalid response format from server: " + text.slice(0, 100)
           );
         }
-
         setUploadStatus({ message: "Processing results...", progress: 80 });
-
         const data = await response.json();
-        console.log("API response data:", data);
         if (data.error) {
           throw new Error("API Error: " + data.error);
         }
-
         const frameData = data.frame_data.map((frame, index) => ({
           time: parseFloat(
             (index / data.frame_data.length) * data.video_duration.toFixed(2)
@@ -394,7 +351,6 @@ const PresentationTestPage = () => {
           anxiety: frame.anxiety,
           confidence: frame.confidence,
         }));
-
         const interpolatedData = [];
         for (let i = 0; i < frameData.length - 1; i++) {
           interpolatedData.push(frameData[i]);
@@ -423,7 +379,6 @@ const PresentationTestPage = () => {
           interpolatedData.push({ ...last, time: data.video_duration });
         }
         setEmotionData(interpolatedData);
-
         setSummaryStats((prevStats) => ({
           ...prevStats,
           confidence: data.mental_health.confidence.toFixed(1),
@@ -440,12 +395,10 @@ const PresentationTestPage = () => {
             (data.mental_health.stress + data.mental_health.anxiety) / 2
           ).toFixed(1),
         }));
-
         setUploadStatus({ message: "Analysis completed!", progress: 100 });
         showMessage("Analysis completed successfully!", "success");
         return;
       } catch (err) {
-        console.error("Upload attempt", attempt, "failed:", err.message);
         if (attempt === retries) {
           setError(
             `Failed to analyze video after ${retries} attempts: ${
@@ -478,7 +431,6 @@ const PresentationTestPage = () => {
       showMessage("An upload is already in progress. Please wait.", "warning");
       return;
     }
-
     const file = event.target.files[0];
     if (file) {
       if (file.size > 100 * 1024 * 1024) {
@@ -543,7 +495,7 @@ const PresentationTestPage = () => {
       )}
       <h1 className="text-4xl md:text-5xl font-bold text-center mb-8 text-indigo-800 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
         <FontAwesomeIcon icon={faBrain} className="mr-3 text-purple-500" />
-        Presentation Test
+        {testTypeHeading}
       </h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
@@ -601,18 +553,19 @@ const PresentationTestPage = () => {
                     className="mr-2 text-blue-500"
                   />
                   <h3 className="font-semibold text-lg text-gray-800">
-                    Current Topic (Question {currentTopic + 1} of {totalTopics})
+                    Current {promptSingular} ({promptLabel} {currentPrompt + 1}{" "}
+                    of {totalPrompts})
                   </h3>
                 </div>
-                <span className="text-sm text-gray-500">{topicTimer}s</span>
+                <span className="text-sm text-gray-500">{promptTimer}s</span>
               </div>
-              <p className="text-gray-700 mb-4">
-                {presentationTopics[currentTopic]}
-              </p>
+              <p className="text-gray-700 mb-4">{prompts[currentPrompt]}</p>
               <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-blue-500 h-2 rounded-full transition-all duration-1000 ease-linear"
-                  style={{ width: `${(topicTimer / TOPIC_DURATION) * 100}%` }}
+                  style={{
+                    width: `${(promptTimer / durationPerPrompt) * 100}%`,
+                  }}
                 ></div>
               </div>
             </div>
@@ -640,7 +593,7 @@ const PresentationTestPage = () => {
           {(!isRecordingFinished || loading) && (
             <div className="flex justify-between mt-4 space-x-4">
               <button
-                onClick={startPresentation}
+                onClick={startTest}
                 disabled={cameraActive || loading || recording || isUploading}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
               >
@@ -830,4 +783,4 @@ const PresentationTestPage = () => {
   );
 };
 
-export default PresentationTestPage;
+export default EvolviSense;

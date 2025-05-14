@@ -15,9 +15,9 @@ import ResultPage from "./pages/Result";
 import RecommendedPlan from "./pages/RecommendedPlan";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Payment from "./pages/payment";
-import EmotionAnalysis from "./pages/EmotionalAnalysis";
 import Summary from "./pages/Summary";
 import InterviewTest from "./pages/InterviewTest";
+import PresentationTestPage from "./pages/PresentationTest";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -108,11 +108,6 @@ function App() {
         },
         { path: "payment", element: <Payment />, errorElement: <ErrorPage /> },
         {
-          path: "emotion-analysis",
-          element: <EmotionAnalysis />,
-          errorElement: <ErrorPage />,
-        },
-        {
           path: "summary",
           element: <Summary />,
           errorElement: <ErrorPage />,
@@ -125,6 +120,11 @@ function App() {
         {
           path: "interview-test",
           element: <InterviewTest />,
+          errorElement: <ErrorPage />,
+        },
+        {
+          path: "presentation-test",
+          element: <PresentationTestPage />,
           errorElement: <ErrorPage />,
         },
         { path: "*", element: <NotFound /> },
