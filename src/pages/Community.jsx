@@ -8,11 +8,11 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const categories = [
   { name: "All Posts" },
-  { name: "Presentation skill"},
-  { name: "Interview skill"},
-  { name: "Communication skill"},
-  { name: "Time management skill"},
-  { name: "Teamwork skill"},
+  { name: "Presentation skill" },
+  { name: "Interview skill" },
+  { name: "Communication skill" },
+  { name: "Time management skill" },
+  { name: "Teamwork skill" },
 ];
 
 const API_BASE_URL = "https://evolvify.runasp.net/api/Community";
@@ -27,12 +27,26 @@ function Community() {
   const [newReply, setNewReply] = useState({});
   const [showComments, setShowComments] = useState({});
   const [loading, setLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // مقفول افتراضيًا
   const navigate = useNavigate();
 
   const accessToken = localStorage.getItem("userToken");
   const userName = localStorage.getItem("username") || "Anonymous";
   const userRole = localStorage.getItem("userRole") || "User";
+
+  // إضافة تحقق لـ screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setSidebarOpen(true); // افتح السايد بار على الشاشات الكبيرة
+      } else {
+        setSidebarOpen(false); // أغلق السايد بار على الموبايل
+      }
+    };
+    handleResize(); // نفذها مرة عند التحميل
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   axios.interceptors.request.use(
     (config) => {
@@ -401,7 +415,7 @@ function Community() {
     <div className="flex min-h-screen bg-gray-100">
       <motion.aside
         initial={{ x: -100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
+        animate={{ x: sidebarOpen ? 0 : -100, opacity: sidebarOpen ? 1 : 0 }}
         transition={{ duration: 0.3 }}
         className={`fixed inset-y-0 left-0 w-64 p-6 bg-white shadow-lg rounded-r-lg z-20 transform md:transform-none md:static md:w-64 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -411,7 +425,7 @@ function Community() {
           <h2 className="text-xl font-bold text-gray-800">Community Hub</h2>
           <button
             className="md:hidden text-gray-600"
-            onClick={() => setSidebarOpen(false)}
+            onClick={() => setSidebarOpen(false)} // تأكيد إغلاق السايد بار
           >
             ✕
           </button>
@@ -423,7 +437,7 @@ function Community() {
                 key={tab}
                 onClick={() => {
                   setActiveTab(tab);
-                  setSidebarOpen(false);
+                  if (window.innerWidth < 768) setSidebarOpen(false); // أغلق السايد بار بعد الاختيار في الموبايل
                 }}
                 className={`w-full text-left py-2 px-4 rounded-lg transition-colors duration-200 ${
                   activeTab === tab
@@ -447,7 +461,7 @@ function Community() {
                   key={cat.name}
                   onClick={() => {
                     setSelectedCategory(cat.name);
-                    setSidebarOpen(false);
+                    if (window.innerWidth < 768) setSidebarOpen(false); // أغلق السايد بار بعد اختيار الفئة
                   }}
                   className={`cursor-pointer py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2 ${
                     selectedCategory === cat.name
@@ -466,10 +480,10 @@ function Community() {
         </div>
       </motion.aside>
 
-      <main className="flex-1 p-6 md:ml-64">
+      <main className={`flex-1 p-6 transition-all duration-300 ${sidebarOpen && "overflow-hidden md:ml-64"}`}>
         <button
           className="md:hidden mb-4 px-4 py-2 bg-blue-600 text-white rounded-lg"
-          onClick={() => setSidebarOpen(true)}
+          onClick={() => setSidebarOpen(true)} // افتح السايد بار بالزر في الموبايل
         >
           ☰ Menu
         </button>
