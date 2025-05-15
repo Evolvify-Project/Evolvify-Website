@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark, FaComment } from "react-icons/fa";
+import {
+  FaHeart,
+  FaRegHeart,
+  FaBookmark,
+  FaRegBookmark,
+  FaComment,
+} from "react-icons/fa";
 import { FiTrash2, FiMoreHorizontal, FiEdit2 } from "react-icons/fi";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -176,7 +182,9 @@ function Community() {
       });
       setPosts(posts.filter((post) => post.id !== postId));
     } catch (err) {
-      setError("Failed to delete post: " + (err.response?.data?.message || err.message));
+      setError(
+        "Failed to delete post: " + (err.response?.data?.message || err.message)
+      );
       console.error("Delete post error:", err.response?.data || err.message);
       if (err.response?.status === 401) {
         navigate("/login");
@@ -225,12 +233,27 @@ function Community() {
         )
       );
     } catch (err) {
-      console.error(
-        "Failed to fetch comments:",
-        err.response?.data || err.message
-      );
-      if (err.response?.status === 401) {
-        navigate("/login");
+      if (err.response?.status === 404) {
+        // لو مفيش كومنتات، حدّث الـ state بقايمة فاضية
+        setPosts(
+          posts.map((post) =>
+            post.id === postId
+              ? {
+                  ...post,
+                  comments: [],
+                  commentsCount: 0,
+                }
+              : post
+          )
+        );
+      } else {
+        console.error(
+          "Failed to fetch comments:",
+          err.response?.data || err.message
+        );
+        if (err.response?.status === 401) {
+          navigate("/login");
+        }
       }
     }
   };
@@ -282,21 +305,6 @@ function Community() {
     } catch (err) {
       console.error(
         "Failed to edit comment:",
-        err.response?.data || err.message
-      );
-      if (err.response?.status === 401) {
-        navigate("/login");
-      }
-    }
-  };
-
-  const deleteComment = async (postId, commentId) => {
-    try {
-      await axios.delete(`${API_BASE_URL}/Post/${postId}/Comment/${commentId}`);
-      fetchComments(postId);
-    } catch (err) {
-      console.error(
-        "Failed to delete comment:",
         err.response?.data || err.message
       );
       if (err.response?.status === 401) {
@@ -570,7 +578,6 @@ function Community() {
                     addComment={addComment}
                     addReply={addReply}
                     editComment={editComment}
-                    deleteComment={deleteComment}
                     toggleCommentLike={toggleCommentLike}
                     toggleReplyLike={toggleReplyLike}
                     newComment={newComment}
@@ -612,7 +619,6 @@ function Post({
   addComment,
   addReply,
   editComment,
-  deleteComment,
   toggleCommentLike,
   toggleReplyLike,
   newComment,
@@ -648,7 +654,9 @@ function Post({
     if (!editPostContent.trim()) return;
     try {
       const response = await axios.put(
-        `${API_BASE_URL}/Post/${post.id}?Content=${encodeURIComponent(editPostContent)}`,
+        `${API_BASE_URL}/Post/${post.id}?Content=${encodeURIComponent(
+          editPostContent
+        )}`,
         {},
         { headers: { Accept: "*/*" } }
       );
@@ -669,7 +677,8 @@ function Post({
     }
   };
 
-  const canEditOrDeletePost = post.userName === userName || userRole === "Admin";
+  const canEditOrDeletePost =
+    post.userName === userName || userRole === "Admin";
 
   return (
     <motion.div
@@ -806,7 +815,6 @@ function Post({
               postId={post.id}
               addReply={addReply}
               editComment={editComment}
-              deleteComment={deleteComment}
               toggleCommentLike={toggleCommentLike}
               toggleReplyLike={toggleReplyLike}
               editingComment={editingComment}
@@ -818,6 +826,7 @@ function Post({
               accessToken={accessToken}
               userName={userName}
               userRole={userRole}
+              setPosts={setPosts}
             />
           ))}
           <div className="flex gap-2 mt-4">
@@ -860,7 +869,6 @@ function Comment({
   postId,
   addReply,
   editComment,
-  deleteComment,
   toggleCommentLike,
   toggleReplyLike,
   editingComment,
@@ -872,19 +880,55 @@ function Comment({
   accessToken,
   userName,
   userRole,
+  setPosts,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [replyInputOpen, setReplyInputOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleToggleReplies = () => {
     setShowReplies(!showReplies);
-    if (!showReplies && !comment.replies?.length) {
-      fetchComments(postId); // Refresh replies if none exist
+    if (!showReplies && !comment.replies?.length && comment.repliesCount > 0) {
+      fetchComments(postId); // استدعي fetchComments بس لو فيه replies متوقعة
     }
   };
 
-  const canEditOrDeleteComment = comment.userName === userName || userRole === "Admin";
+  const canEditOrDeleteComment =
+    comment.userName === userName || userRole === "Admin";
+
+  const deleteComment = async (postId, commentId) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/Post/${postId}/Comment/${commentId}`);
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                comments: post.comments.filter(
+                  (comment) => comment.id !== commentId
+                ),
+                commentsCount:
+                  post.commentsCount > 0 ? post.commentsCount - 1 : 0,
+              }
+            : post
+        )
+      );
+      setMenuOpen(false);
+    } catch (err) {
+      console.error(
+        "Failed to delete comment:",
+        err.response?.data || err.message
+      );
+      setError(
+        "Failed to delete comment: " +
+          (err.response?.data?.message || err.message)
+      );
+      if (err.response?.status === 401) {
+        navigate("/login");
+      }
+    }
+  };
 
   return (
     <motion.div
@@ -903,7 +947,9 @@ function Comment({
           />
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <p className="font-semibold text-gray-800">{comment.userName || "Anonymous"}</p>
+              <p className="font-semibold text-gray-800">
+                {comment.userName || "Anonymous"}
+              </p>
               <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
                 {new Date(comment.createdAt).toLocaleString()}
               </span>
@@ -1113,7 +1159,9 @@ function Comment({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              {showReplies ? "Hide replies" : `Show ${comment.repliesCount} replies`}
+              {showReplies
+                ? "Hide replies"
+                : `Show ${comment.repliesCount} replies`}
             </motion.button>
           )}
         </div>

@@ -62,12 +62,6 @@ export default function Navbar() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
       setNavbarColor(window.scrollY > 0);
-      console.log(
-        "Scroll Y:",
-        window.scrollY,
-        "NavbarColor:",
-        window.scrollY > 0
-      );
     };
     window.addEventListener("scroll", handleScroll);
     return () => {

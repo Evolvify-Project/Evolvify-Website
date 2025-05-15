@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
-import award from "../assets/images/award_first.png";
+import award from "../assets/images/Awards.jpg";
 import payment from "../pages/payment";
 
 const PremiumSection = () => {
