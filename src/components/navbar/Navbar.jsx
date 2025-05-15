@@ -62,8 +62,13 @@ export default function Navbar() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
       setNavbarColor(window.scrollY > 0);
+      console.log(
+        "Scroll Y:",
+        window.scrollY,
+        "NavbarColor:",
+        window.scrollY > 0
+      );
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -84,11 +89,9 @@ export default function Navbar() {
         setIsDropdownOpen(false);
       }
     };
-
     if (isDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -97,16 +100,18 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`p-5 shadow-md bg-slate-100 transition-all duration-300 ${
+        className={`p-5 shadow-md transition-all duration-300 ${
+          navbarColor ? "bg-darkBlue text-white" : "bg-slate-100 text-gray-800"
+        } ${
           isScrolled ? "md:fixed md:top-0 md:w-full md:z-50 md:shadow-lg" : ""
-        } ${navbarColor ? "bg-darkBlue text-white" : ""}`}
+        }`}
       >
         <div className="container mx-auto flex items-center justify-between gap-4">
           <Link to="./">
             <img
               src={navbarColor ? logoLight : logoDark}
               alt="evolvify logo"
-              className="w-36 sm:w-48 h-[67px]"
+              className="w-36 sm:w-48 h-auto"
             />
           </Link>
 
@@ -128,10 +133,8 @@ export default function Navbar() {
                   }
                   className={({ isActive }) =>
                     `inline-block pb-2 relative before:content-[''] before:absolute before:w-0 before:h-0.5 before:bg-[#64B5F6] before:rounded-md before:left-0 before:-bottom-1 before:transition-[width] before:duration-300 hover:before:w-full ${
-                      isActive
-                        ? "text-primary-600 before:w-full"
-                        : "text-primary-600"
-                    } ${navbarColor ? "text-white" : ""}`
+                      isActive ? "before:w-full" : ""
+                    } ${navbarColor ? "text-white" : "text-primary-600"}`
                   }
                 >
                   {item}
@@ -283,6 +286,7 @@ export default function Navbar() {
                 <>
                   <li>
                     <NavLink
+                      Anchors
                       to="./dashboard"
                       className={({ isActive }) =>
                         isActive
