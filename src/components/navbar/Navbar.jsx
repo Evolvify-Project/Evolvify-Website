@@ -134,7 +134,7 @@ export default function Navbar() {
                   className={({ isActive }) =>
                     `inline-block pb-2 relative before:content-[''] before:absolute before:w-0 before:h-0.5 before:bg-[#64B5F6] before:rounded-md before:left-0 before:-bottom-1 before:transition-[width] before:duration-300 hover:before:w-full ${
                       isActive ? "before:w-full" : ""
-                    } ${navbarColor ? "text-white" : "text-primary-600"}`
+                    } ${navbarColor ? "text-white" : "text-[#233A66]"}`
                   }
                 >
                   {item}
