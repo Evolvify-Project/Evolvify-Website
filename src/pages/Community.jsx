@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark, FaComment } from "react-icons/fa";
 import { FiTrash2, FiMoreHorizontal, FiEdit2 } from "react-icons/fi";
@@ -67,7 +66,7 @@ function Community() {
       });
       const fetchedPosts = response.data.data.map((post) => ({
         ...post,
-        liked: false,
+        liked: post.isLiked, // استخدام isLiked من الباك اند
         saved: false,
         comments: [],
         commentsCount: post.commentsCount || 0,
