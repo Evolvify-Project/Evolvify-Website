@@ -226,14 +226,18 @@ const Dashboard = () => {
             <span>Edit</span>
             <i className="fa-regular fa-pen-to-square"></i>
           </button>
-          <div className="UserInfo text-sm sm:text-base">
-            <p className="flex items-center my-1 sm:my-2 truncate">
-              <i className="fa-solid fa-envelope mr-1 sm:mr-2 text-white"></i>
-              {email}
+          <div className="UserInfo text-sm sm:text-base text-center">
+            <p className="flex justify-center items-center my-1 sm:my-2 mx-auto w-full max-w-[250px] sm:max-w-[100%] sm:w-auto gap-2 sm:gap-3">
+              <i className="fa-solid fa-envelope text-white shrink-0"></i>
+              <span className="text-white text-start break-words w-full sm:w-auto sm:break-all">
+                {email}
+              </span>
             </p>
-            <p className="flex items-center truncate">
-              <i className="fa-solid fa-phone mr-1 sm:mr-2 text-white"></i>
-              {phoneNumber}
+            <p className="flex justify-start items-center mx-auto w-full max-w-[250px] sm:max-w-[100%] sm:w-auto gap-2 sm:gap-3">
+              <i className="fa-solid fa-phone text-white shrink-0"></i>
+              <span className="text-white text-start break-words w-full sm:w-auto sm:break-all">
+                {phoneNumber}
+              </span>
             </p>
           </div>
         </div>

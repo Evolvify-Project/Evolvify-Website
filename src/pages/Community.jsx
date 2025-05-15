@@ -487,7 +487,7 @@ function Community() {
 
       <main
         className={`flex-1 p-6 transition-all duration-300 ${
-          sidebarOpen && "overflow-hidden md:ml-64"
+          sidebarOpen && "overflow-hidden md:ml-10"
         }`}
       >
         {/* Mobile Menu Button: Opens the sidebar with a hamburger icon */}
