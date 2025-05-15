@@ -413,10 +413,10 @@ function Community() {
       : posts.filter((post) => post.category === selectedCategory);
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-white">
       {/* Sidebar: Contains tabs and categories, now using <aside> */}
       <aside
-        className={`fixed inset-y-0 left-0 w-64 p-6 bg-white shadow-lg rounded-r-lg z-20 transform md:transform-none md:static md:w-64 ${
+        className={`fixed inset-y-0 left-0 w-64 p-6 bg-white shadow-xl rounded-r-lg z-20 transform md:transform-none md:static md:w-64 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform duration-300 md:translate-x-0`}
       >
@@ -514,7 +514,7 @@ function Community() {
         >
           <textarea
             placeholder="Share your thoughts..."
-            className="w-full p-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow duration-200 resize-none shadow-sm"
+            className="w-full p-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow duration-200 resize-none shadow-md"
             rows="4"
             value={newPost}
             onChange={(e) => setNewPost(e.target.value)}
