@@ -479,7 +479,8 @@ const EvolviSense = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 text-gray-800 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-sans">
+      <div className="max-w-7xl mx-auto p-5 sm:px-6 lg:px-8 py-6">
       {message && (
         <div
           className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 ${
@@ -778,7 +779,8 @@ const EvolviSense = ({
             </ul>
           </div>
         </div>
-      </div>
+        </div>
+        </div>
     </div>
   );
 };
