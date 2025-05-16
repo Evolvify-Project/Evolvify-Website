@@ -506,7 +506,7 @@ const EvolviSense = ({
                 ref={videoRef}
                 src={recordedVideoUrl}
                 controls
-                className="w-full h-[400px] object-cover rounded-2xl"
+                className="w-full h-[200px] object-cover rounded-2xl"
               />
             ) : (
               <>
@@ -515,7 +515,7 @@ const EvolviSense = ({
                   autoPlay
                   playsInline
                   muted
-                  className="w-full h-[400px] object-cover rounded-2xl"
+                  className="w-full h-[200px] object-cover rounded-2xl"
                   style={{ display: cameraActive ? "block" : "none" }}
                 />
                 {!cameraActive && (
@@ -592,7 +592,7 @@ const EvolviSense = ({
             </div>
           )}
           {(!isRecordingFinished || loading) && (
-            <div className="flex justify-between mt-4 space-x-4">
+            <div className="flex justify-between flex-wrap gap-3 mt-4 space-x-4">
               <button
                 onClick={startTest}
                 disabled={cameraActive || loading || recording || isUploading}
