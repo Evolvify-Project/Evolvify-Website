@@ -12,8 +12,8 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFaceSmile,
-  faBrain,
   faMicrophone,
+  faChartBar,
   faPlay,
   faStop,
   faSync,
@@ -24,6 +24,15 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { useEmotion } from "./EmotionContext";
+
+const getIconForTestType = (type) => {
+  switch (type.toLowerCase()) {
+    case "interview test":
+      return faMicrophone;
+    case "presentation test":
+      return faChartBar;
+  }
+};
 
 const EvolviSense = ({
   prompts,
@@ -498,7 +507,7 @@ const EvolviSense = ({
         <FontAwesomeIcon icon={faBrain} className="mr-3 text-purple-500" />
         {testTypeHeading}
       </h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 ">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <div className="relative w-full rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl bg-white">
             {recordedVideoUrl ? (
@@ -506,7 +515,7 @@ const EvolviSense = ({
                 ref={videoRef}
                 src={recordedVideoUrl}
                 controls
-                className="w-full h-[400px] object-cover rounded-2xl"
+                className="w-full h-[200px] object-cover rounded-2xl"
               />
             ) : (
               <>
@@ -515,11 +524,11 @@ const EvolviSense = ({
                   autoPlay
                   playsInline
                   muted
-                  className="w-full h-[400px] object-cover rounded-2xl"
+                  className="w-full h-[200px] object-cover rounded-2xl"
                   style={{ display: cameraActive ? "block" : "none" }}
                 />
                 {!cameraActive && (
-                  <div className="w-full h-[400px] flex items-center justify-center bg-gray-200 rounded-2xl">
+                  <div className="w-full h-[200px] flex items-center justify-center bg-gray-200 rounded-2xl">
                     <span className="text-gray-500 text-lg">Camera Off</span>
                   </div>
                 )}
@@ -630,8 +639,7 @@ const EvolviSense = ({
             </div>
           )}
         </div>
-        <div className="flex flex-col gap-7">
-          <div className="lg:col-span-1">
+        <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-4 flex items-center text-indigo-700">
               <FontAwesomeIcon
@@ -661,8 +669,8 @@ const EvolviSense = ({
               </p>
             </div>
           </div>
-          </div>
-          <div className="lg:col-span-1">
+        </div>
+        <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-4 flex items-center text-green-700">
               <FontAwesomeIcon
@@ -692,9 +700,8 @@ const EvolviSense = ({
               </p>
             </div>
           </div>
-          </div>    
         </div>
-        <div className="lg:col-span-2 flex flex-col ">
+        <div className="lg:col-span-2">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
               <h3 className="text-lg font-semibold text-gray-700">
@@ -782,7 +789,7 @@ const EvolviSense = ({
           </div>
         </div>
         </div>
-        </div>
+      </div>
     </div>
   );
 };
