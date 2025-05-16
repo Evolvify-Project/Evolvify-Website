@@ -507,7 +507,7 @@ const EvolviSense = ({
         <FontAwesomeIcon icon={faBrain} className="mr-3 text-purple-500" />
         {testTypeHeading}
       </h1>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 ">
         <div className="lg:col-span-1">
           <div className="relative w-full rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl bg-white">
             {recordedVideoUrl ? (
@@ -515,7 +515,7 @@ const EvolviSense = ({
                 ref={videoRef}
                 src={recordedVideoUrl}
                 controls
-                className="w-full h-[200px] object-cover rounded-2xl"
+                className="w-full h-[400px] object-cover rounded-2xl"
               />
             ) : (
               <>
@@ -524,11 +524,11 @@ const EvolviSense = ({
                   autoPlay
                   playsInline
                   muted
-                  className="w-full h-[200px] object-cover rounded-2xl"
+                  className="w-full h-[400px] object-cover rounded-2xl"
                   style={{ display: cameraActive ? "block" : "none" }}
                 />
                 {!cameraActive && (
-                  <div className="w-full h-[200px] flex items-center justify-center bg-gray-200 rounded-2xl">
+                  <div className="w-full h-[400px] flex items-center justify-center bg-gray-200 rounded-2xl">
                     <span className="text-gray-500 text-lg">Camera Off</span>
                   </div>
                 )}
@@ -639,7 +639,8 @@ const EvolviSense = ({
             </div>
           )}
         </div>
-        <div className="lg:col-span-1">
+        <div className="flex flex-col gap-7">
+          <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-4 flex items-center text-indigo-700">
               <FontAwesomeIcon
@@ -669,8 +670,8 @@ const EvolviSense = ({
               </p>
             </div>
           </div>
-        </div>
-        <div className="lg:col-span-1">
+          </div>
+          <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-4 flex items-center text-green-700">
               <FontAwesomeIcon
@@ -700,8 +701,9 @@ const EvolviSense = ({
               </p>
             </div>
           </div>
+          </div>    
         </div>
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 flex flex-col ">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
               <h3 className="text-lg font-semibold text-gray-700">
@@ -788,6 +790,307 @@ const EvolviSense = ({
             </ul>
           </div>
         </div>
+        {message && (
+          <div
+            className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 ${
+              message.type === "success"
+                ? "bg-green-100 border-green-400 text-green-700"
+                : message.type === "warning"
+                ? "bg-yellow-100 border-yellow-400 text-yellow-700"
+                : "bg-blue-100 border-blue-400 text-blue-700"
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
+        <h1 className="text-4xl md:text-5xl font-bold text-center mb-8 text-[#233A66] bg-clip-text">
+          <FontAwesomeIcon
+            icon={getIconForTestType(testTypeHeading)}
+            className="mr-3 text-[#233A66]"
+          />
+          {testTypeHeading}
+        </h1>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <div className="relative w-full rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl bg-white">
+              {recordedVideoUrl ? (
+                <video
+                  ref={videoRef}
+                  src={recordedVideoUrl}
+                  controls
+                  className="w-full h-[400px] object-cover rounded-2xl"
+                />
+              ) : (
+                <>
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-[400px] object-cover rounded-2xl"
+                    style={{ display: cameraActive ? "block" : "none" }}
+                  />
+                  {!cameraActive && (
+                    <div className="w-full h-[400px] flex items-center justify-center bg-gray-200 rounded-2xl">
+                      <span className="text-gray-500 text-lg">Camera Off</span>
+                    </div>
+                  )}
+                  {recording && countdown !== null && (
+                    <div className="absolute top-4 right-4 bg-red-600 text-white rounded-full p-2 flex items-center animate-pulse">
+                      <FontAwesomeIcon icon={faVideo} className="mr-2" />
+                      <span>{countdown}s</span>
+                    </div>
+                  )}
+                </>
+              )}
+              {loading && (
+                <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center flex-col rounded-2xl">
+                  <span className="text-white text-lg animate-pulse mb-2">
+                    {uploadStatus.message}
+                  </span>
+                  <div className="w-3/4 bg-gray-300 rounded-full h-2.5">
+                    <div
+                      className="bg-blue-400 h-2.5 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadStatus.progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {recording && (
+              <div className="mt-4 bg-white rounded-2xl p-4 shadow-lg border border-gray-100 transition-all duration-500 transform animate-fadeIn">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      className="mr-2 text-blue-500"
+                    />
+                    <h3 className="font-semibold text-lg text-gray-800">
+                      Current {promptSingular} ({promptLabel}{" "}
+                      {currentPrompt + 1} of {totalPrompts})
+                    </h3>
+                  </div>
+                  <span className="text-sm text-gray-500">{promptTimer}s</span>
+                </div>
+                <p className="text-gray-700 mb-4">{prompts[currentPrompt]}</p>
+                <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-1000 ease-linear"
+                    style={{
+                      width: `${(promptTimer / durationPerPrompt) * 100}%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+            )}
+            {isRecordingFinished && !loading && (
+              <div className="flex justify-between mt-4 space-x-4">
+                <button
+                  onClick={submitVideo}
+                  disabled={loading || isUploading}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-xl hover:from-green-600 hover:to-teal-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
+                >
+                  <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                  Submit
+                </button>
+                <button
+                  onClick={cancelRecording}
+                  disabled={loading || isUploading}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
+                >
+                  <FontAwesomeIcon icon={faTimes} className="mr-2" />
+                  Cancel
+                </button>
+              </div>
+            )}
+            {(!isRecordingFinished || loading) && (
+              <div className="flex justify-between mt-4 space-x-4">
+                <button
+                  onClick={startTest}
+                  disabled={cameraActive || loading || recording || isUploading}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
+                >
+                  <FontAwesomeIcon icon={faPlay} className="mr-2" />
+                  Start
+                </button>
+                <button
+                  onClick={stopCamera}
+                  disabled={!cameraActive && !recording}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
+                >
+                  <FontAwesomeIcon icon={faStop} className="mr-2" />
+                  Stop
+                </button>
+                <button
+                  onClick={newSession}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-xl hover:from-green-600 hover:to-teal-700 transition-all duration-200 flex items-center justify-center"
+                >
+                  <FontAwesomeIcon icon={faSync} className="mr-2" />
+                  Reset
+                </button>
+                <label className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-xl hover:from-purple-600 hover:to-violet-700 transition-all duration-200 flex items-center justify-center cursor-pointer">
+                  <FontAwesomeIcon icon={faUpload} className="mr-2" />
+                  Upload
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    className="hidden"
+                    disabled={isUploading}
+                  />
+                </label>
+              </div>
+            )}
+          </div>
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              <h2 className="text-xl font-semibold mb-4 flex items-center text-indigo-700">
+                <FontAwesomeIcon
+                  icon={faFaceSmile}
+                  className="mr-2 text-yellow-500"
+                />
+                Emotional State
+              </h2>
+              <div className="space-y-3 text-gray-600">
+                <p>
+                  Primary Emotion:{" "}
+                  <span className="text-indigo-600 font-medium">
+                    {summaryStats.primaryEmotion}
+                  </span>
+                </p>
+                <p>
+                  Confidence:{" "}
+                  <span className="text-indigo-600 font-medium">
+                    {summaryStats.confidence}%
+                  </span>
+                </p>
+                <p>
+                  Emotional Stability:{" "}
+                  <span className="text-indigo-600 font-medium">
+                    {summaryStats.emotionalStability}%
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              <h2 className="text-xl font-semibold mb-4 flex items-center text-green-700">
+                <FontAwesomeIcon
+                  icon={faMicrophone}
+                  className="mr-2 text-green-500"
+                />
+                Metrics
+              </h2>
+              <div className="space-y-3 text-gray-600">
+                <p>
+                  Stress:{" "}
+                  <span className="text-red-500 font-medium">
+                    {summaryStats.stress}%
+                  </span>
+                </p>
+                <p>
+                  Anxiety:{" "}
+                  <span className="text-purple-500 font-medium">
+                    {summaryStats.anxiety}%
+                  </span>
+                </p>
+                <p>
+                  Peak Stress:{" "}
+                  <span className="text-red-500 font-medium">
+                    {summaryStats.peakStress}%
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
+                <h3 className="text-lg font-semibold text-gray-700">
+                  Confidence
+                </h3>
+                <p className="text-2xl font-bold text-green-600 mt-2">
+                  {summaryStats.confidence}%
+                </p>
+              </div>
+              <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
+                <h3 className="text-lg font-semibold text-gray-700">Anxiety</h3>
+                <p className="text-2xl font-bold text-purple-600 mt-2">
+                  {summaryStats.anxiety}%
+                </p>
+              </div>
+              <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
+                <h3 className="text-lg font-semibold text-gray-700">Stress</h3>
+                <p className="text-2xl font-bold text-red-600 mt-2">
+                  {summaryStats.stress}%
+                </p>
+              </div>
+            </div>
+            <div className="mt-8 bg-white p-5 rounded-xl shadow-md border border-gray-100">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                Emotional Trends
+              </h2>
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={emotionData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis dataKey="time" stroke="#666" />
+                  <YAxis stroke="#666" />
+                  <Tooltip
+                    content={<LineChartTooltip />}
+                    contentStyle={{
+                      background: "#fff",
+                      border: "1px solid #ddd",
+                    }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: "10px" }} />
+                  <Line
+                    type="monotone"
+                    dataKey="stress"
+                    stroke="#ff4d4f"
+                    name="Stress"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="anxiety"
+                    stroke="#b37feb"
+                    name="Anxiety"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="confidence"
+                    stroke="#52c41a"
+                    name="Confidence"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-8 bg-gray-50 p-5 rounded-xl shadow-md border border-gray-200">
+              <h3 className="text-2xl font-semibold mb-4 text-gray-800">
+                Key Insights
+              </h3>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-indigo-600 rounded-full mr-2"></span>
+                  Primary Emotion: {summaryStats.primaryEmotion}
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-red-600 rounded-full mr-2"></span>
+                  Peak Stress Level: {summaryStats.peakStress}%
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                  Emotional Stability: {summaryStats.emotionalStability}%
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
