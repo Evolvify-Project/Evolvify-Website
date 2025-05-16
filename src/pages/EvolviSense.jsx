@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFaceSmile,
   faMicrophone,
+  faChartBar,
   faPlay,
   faStop,
   faSync,
@@ -510,7 +511,7 @@ const EvolviSense = ({
           />
           {testTypeHeading}
         </h1>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="lg:col-span-1">
             <div className="relative w-full rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl bg-white">
               {recordedVideoUrl ? (
@@ -604,7 +605,7 @@ const EvolviSense = ({
               </div>
             )}
             {(!isRecordingFinished || loading) && (
-              <div className="flex justify-between mt-4 space-x-4">
+              <div className="flex justify-between flex-wrap gap-3 mt-4 space-x-4">
                 <button
                   onClick={startTest}
                   disabled={cameraActive || loading || recording || isUploading}
@@ -642,69 +643,71 @@ const EvolviSense = ({
               </div>
             )}
           </div>
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-              <h2 className="text-xl font-semibold mb-4 flex items-center text-indigo-700">
-                <FontAwesomeIcon
-                  icon={faFaceSmile}
-                  className="mr-2 text-yellow-500"
-                />
-                Emotional State
-              </h2>
-              <div className="space-y-3 text-gray-600">
-                <p>
-                  Primary Emotion:{" "}
-                  <span className="text-indigo-600 font-medium">
-                    {summaryStats.primaryEmotion}
-                  </span>
-                </p>
-                <p>
-                  Confidence:{" "}
-                  <span className="text-indigo-600 font-medium">
-                    {summaryStats.confidence}%
-                  </span>
-                </p>
-                <p>
-                  Emotional Stability:{" "}
-                  <span className="text-indigo-600 font-medium">
-                    {summaryStats.emotionalStability}%
-                  </span>
-                </p>
+          <div className="flex flex-col gap-7">
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <h2 className="text-xl font-semibold mb-4 flex items-center text-indigo-700">
+                  <FontAwesomeIcon
+                    icon={faFaceSmile}
+                    className="mr-2 text-yellow-500"
+                  />
+                  Emotional State
+                </h2>
+                <div className="space-y-3 text-gray-600">
+                  <p>
+                    Primary Emotion:{" "}
+                    <span className="text-indigo-600 font-medium">
+                      {summaryStats.primaryEmotion}
+                    </span>
+                  </p>
+                  <p>
+                    Confidence:{" "}
+                    <span className="text-indigo-600 font-medium">
+                      {summaryStats.confidence}%
+                    </span>
+                  </p>
+                  <p>
+                    Emotional Stability:{" "}
+                    <span className="text-indigo-600 font-medium">
+                      {summaryStats.emotionalStability}%
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <h2 className="text-xl font-semibold mb-4 flex items-center text-green-700">
+                  <FontAwesomeIcon
+                    icon={faMicrophone}
+                    className="mr-2 text-green-500"
+                  />
+                  Metrics
+                </h2>
+                <div className="space-y-3 text-gray-600">
+                  <p>
+                    Stress:{" "}
+                    <span className="text-red-500 font-medium">
+                      {summaryStats.stress}%
+                    </span>
+                  </p>
+                  <p>
+                    Anxiety:{" "}
+                    <span className="text-purple-500 font-medium">
+                      {summaryStats.anxiety}%
+                    </span>
+                  </p>
+                  <p>
+                    Peak Stress:{" "}
+                    <span className="text-red-500 font-medium">
+                      {summaryStats.peakStress}%
+                    </span>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-              <h2 className="text-xl font-semibold mb-4 flex items-center text-green-700">
-                <FontAwesomeIcon
-                  icon={faMicrophone}
-                  className="mr-2 text-green-500"
-                />
-                Metrics
-              </h2>
-              <div className="space-y-3 text-gray-600">
-                <p>
-                  Stress:{" "}
-                  <span className="text-red-500 font-medium">
-                    {summaryStats.stress}%
-                  </span>
-                </p>
-                <p>
-                  Anxiety:{" "}
-                  <span className="text-purple-500 font-medium">
-                    {summaryStats.anxiety}%
-                  </span>
-                </p>
-                <p>
-                  Peak Stress:{" "}
-                  <span className="text-red-500 font-medium">
-                    {summaryStats.peakStress}%
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 flex flex-col ">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
                 <h3 className="text-lg font-semibold text-gray-700">
