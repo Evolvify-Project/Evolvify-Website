@@ -12,7 +12,6 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFaceSmile,
-  faBrain,
   faMicrophone,
   faPlay,
   faStop,
