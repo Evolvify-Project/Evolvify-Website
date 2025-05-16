@@ -1,31 +1,31 @@
-// استيراد الأدوات والمكتبات الضرورية
+// Import necessary tools and libraries
 import React, { useState, useEffect, useRef } from "react";
 import logoDark from "../../assets/images/logo.png";
 import logoLight from "../../assets/images/light-logo.png";
 import placeHolderImg from "../../assets/images/placeholder-vector.jpg";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react"; // أيقونات
+import { Menu, X, ChevronDown } from "lucide-react"; // Icons
 import axios from "axios";
 
-// تعريف كمبوننت Navbar
+// Define Navbar component
 export default function Navbar() {
-  // حالات (States) للتحكم في عرض المكونات المختلفة
-  const [isOpen, setIsOpen] = useState(false); // للقائمة الجانبية في الموبايل
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // حالة تسجيل الدخول
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // القائمة المنسدلة للبروفايل
-  const [profileImage, setProfileImage] = useState(placeHolderImg); // صورة البروفايل
-  const [isScrolled, setIsScrolled] = useState(false); // هل المستخدم عمل scroll
-  const [navbarColor, setNavbarColor] = useState(false); // تغيير لون الخلفية عند السكروول
-  const navigate = useNavigate(); // للتنقل بين الصفحات
-  const dropdownRef = useRef(null); // مرجع للقائمة المنسدلة عشان نقدر نقفلها لما نضغط براها
+  // States for controlling component visibility
+  const [isOpen, setIsOpen] = useState(false); // Mobile menu
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Login status
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Profile dropdown
+  const [profileImage, setProfileImage] = useState(placeHolderImg); // Profile image
+  const [isScrolled, setIsScrolled] = useState(false); // Scroll status
+  const [navbarColor, setNavbarColor] = useState(false); // Background color on scroll
+  const navigate = useNavigate(); // For navigation
+  const dropdownRef = useRef(null); // Reference for dropdown to close on outside click
 
-  // دالة لتبديل عرض القائمة الجانبية في الموبايل
+  // Toggle mobile menu
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  // دالة لتبديل فتح/غلق القائمة المنسدلة للبروفايل
+  // Toggle profile dropdown
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
-  // التحقق إذا كان الرابط صحيح
+  // Validate URL
   const isValidUrl = (url) => {
     try {
       new URL(url);
@@ -35,10 +35,10 @@ export default function Navbar() {
     }
   };
 
-  // التحقق من تسجيل الدخول وجلب صورة البروفايل
+  // Check login status and fetch profile image
   useEffect(() => {
     const token = localStorage.getItem("userToken");
-    setIsLoggedIn(!!token); // إذا فيه توكن، المستخدم مسجل دخول
+    setIsLoggedIn(!!token); // Set login status based on token
 
     if (token) {
       axios
@@ -50,11 +50,11 @@ export default function Navbar() {
         })
         .then((response) => {
           let imageUrl = response.data?.imageUrl;
-          // إذا الرابط مش كامل نضيف رابط السيرفر
+          // Add server URL if the link is not complete
           if (imageUrl && !isValidUrl(imageUrl)) {
             imageUrl = `https://evolvify.runasp.net${imageUrl}`;
           }
-          // لو الرابط سليم نحط الصورة، غير كده نرجع للصورة الافتراضية
+          // Set profile image if URL is valid, else use placeholder
           if (imageUrl && isValidUrl(imageUrl)) {
             setProfileImage(imageUrl);
           } else {
@@ -68,7 +68,7 @@ export default function Navbar() {
     }
   }, []);
 
-  // التحكم في لون الخلفية عند التمرير (scroll)
+  // Control background color on scroll
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
@@ -80,7 +80,7 @@ export default function Navbar() {
     };
   }, []);
 
-  // دالة تسجيل الخروج
+  // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("userToken");
     setIsLoggedIn(false);
@@ -89,7 +89,7 @@ export default function Navbar() {
     navigate("./login");
   };
 
-  // إغلاق القائمة المنسدلة إذا المستخدم ضغط براها
+  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -106,7 +106,7 @@ export default function Navbar() {
 
   return (
     <>
-      {/* شريط التنقل */}
+      {/* Navbar */}
       <nav
         className={`p-5 shadow-md transition-all duration-300 ${
           navbarColor ? "bg-darkBlue text-white" : "bg-slate-100 text-gray-800"
@@ -115,7 +115,7 @@ export default function Navbar() {
         }`}
       >
         <div className="container mx-auto flex items-center justify-between gap-4">
-          {/* شعار الموقع */}
+          {/* Website logo */}
           <Link to="./">
             <img
               src={navbarColor ? logoLight : logoDark}
@@ -124,7 +124,7 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* روابط الصفحات (في الشاشات الكبيرة) */}
+          {/* Page links (desktop view) */}
           <ul className="hidden md:flex gap-8 items-center">
             {[
               "Home",
@@ -142,8 +142,10 @@ export default function Navbar() {
                       : `./${item.toLowerCase()}`
                   }
                   className={({ isActive }) =>
-                    `inline-block pb-2 relative before:content-[''] before:absolute before:w-0 before:h-0.5 before:bg-[#64B5F6] before:rounded-md before:left-0 before:-bottom-1 before:transition-[width] before:duration-300 hover:before:w-full ${
-                      isActive ? "before:w-full" : ""
+                    `inline-block pb-2 relative before:content-[''] before:absolute before:w-0 before:h-0.5 before:rounded-md before:left-0 before:-bottom-1 before:transition-[width] before:duration-300 ${
+                      isActive
+                        ? "before:w-full before:bg-green-500" // Green underline for active link
+                        : "hover:before:w-full hover:before:bg-[#64B5F6]" // Blue underline on hover for non-active links
                     } ${navbarColor ? "text-white" : "text-[#233A66]"}`
                   }
                 >
@@ -153,14 +155,14 @@ export default function Navbar() {
             ))}
           </ul>
 
-          {/* زر البروفايل أو التسجيل (في الشاشات الكبيرة) */}
+          {/* Profile or register button (desktop view) */}
           <div className="hidden md:block">
             {isLoggedIn ? (
               <div className="relative" ref={dropdownRef}>
-                {/* صورة البروفايل والسهم */}
+                {/* Profile image and arrow */}
                 <div className="flex items-center gap-2">
                   <button
-                    className="w-10 h-10 rounded-full overflow-hidden border-2 border-sky-500 focus:outline-none"
+                    className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#64B5F6] focus:outline-none"
                     onClick={toggleDropdown}
                   >
                     <img
@@ -181,7 +183,7 @@ export default function Navbar() {
                   />
                 </div>
 
-                {/* القائمة المنسدلة */}
+                {/* Dropdown menu */}
                 {isDropdownOpen && (
                   <div
                     className={`absolute right-0 mt-2 w-48 border border-gray-200 rounded-md shadow-lg z-10 ${
@@ -235,15 +237,19 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* زر فتح القائمة الجانبية في الموبايل */}
+          {/* Mobile menu toggle button */}
           <div className="md:hidden">
             <button onClick={toggleMenu}>
-              {isOpen ? <X size={28} /> : <Menu size={28} />}
+              {isOpen ? (
+                <i className="fas fa-times text-2xl sm:text-xl text-darkBlue hover:text-red-500 transition-all duration-500 hover:rotate-180" />
+              ) : (
+                <i className="fas fa-bars text-2xl text-darkBlue sm:text-xl transition-transform duration-300 hover:rotate-180" />
+              )}
             </button>
           </div>
         </div>
 
-        {/* القائمة الجانبية في الموبايل */}
+        {/* Mobile menu */}
         {isOpen && (
           <div className="md:hidden mt-4 px-4">
             <ul className="flex flex-col gap-4">
@@ -263,9 +269,13 @@ export default function Navbar() {
                         : `./${item.toLowerCase()}`
                     }
                     className={({ isActive }) =>
-                      isActive
-                        ? "text-sky-600 block pb-1 border-b border-sky-500"
-                        : "text-gray-800 block pb-1"
+                      `block pb-1 border-b  ${
+                        isActive
+                          ? "border-green-500" // Green underline for active link
+                          : `border-transparent ${
+                              navbarColor ? "text-white" : "text-gray-800"
+                            } hover:border-[#64B5F6]` // Blue underline on hover, white text when scrolled
+                      }`
                     }
                     onClick={() => setIsOpen(false)}
                   >
@@ -274,7 +284,7 @@ export default function Navbar() {
                 </li>
               ))}
 
-              {/* خيارات تسجيل أو تسجيل خروج حسب الحالة */}
+              {/* Register or logout options based on login status */}
               {!isLoggedIn ? (
                 <li>
                   <Link to="./signup" onClick={() => setIsOpen(false)}>
@@ -289,9 +299,13 @@ export default function Navbar() {
                     <NavLink
                       to="./dashboard"
                       className={({ isActive }) =>
-                        isActive
-                          ? "text-sky-600 block pb-1 border-b border-sky-500"
-                          : "text-gray-800 block pb-1"
+                        `block pb-1 border-b ${
+                          isActive
+                            ? "border-green-500"
+                            : `border-transparent ${
+                                navbarColor ? "text-white" : "text-gray-800"
+                              } hover:border-[#64B5F6]`
+                        }`
                       }
                       onClick={() => setIsOpen(false)}
                     >
@@ -301,7 +315,9 @@ export default function Navbar() {
                   <li>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left text-gray-800 block pb-1"
+                      className={`w-full text-left pb-1 border-b border-transparent ${
+                        navbarColor ? "text-white" : "text-gray-800"
+                      } hover:border-[#64B5F6]`}
                     >
                       Logout
                     </button>
@@ -313,7 +329,7 @@ export default function Navbar() {
         )}
       </nav>
 
-      {/* عنصر وهمي عشان يعمل padding لما الـ navbar يبقى ثابت */}
+      {/* Placeholder div for padding when navbar is fixed */}
       <div className={`${isScrolled ? "md:pt-20 hidden md:block" : ""}`}></div>
     </>
   );
