@@ -519,7 +519,7 @@ const EvolviSense = ({
                   style={{ display: cameraActive ? "block" : "none" }}
                 />
                 {!cameraActive && (
-                  <div className="w-full h-[400px] flex items-center justify-center bg-gray-200 rounded-2xl">
+                  <div className="w-full h-[200px] flex items-center justify-center bg-gray-200 rounded-2xl">
                     <span className="text-gray-500 text-lg">Camera Off</span>
                   </div>
                 )}
