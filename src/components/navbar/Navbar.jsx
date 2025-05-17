@@ -144,7 +144,7 @@ export default function Navbar() {
                   className={({ isActive }) =>
                     `inline-block pb-2 relative before:content-[''] before:absolute before:w-0 before:h-0.5 before:rounded-md before:left-0 before:-bottom-1 before:transition-[width] before:duration-300 ${
                       isActive
-                        ? "before:w-full before:bg-green-500" // Green underline for active link
+                        ? "before:w-full before:bg-[#64B5F6]" // Green underline for active link
                         : "hover:before:w-full hover:before:bg-[#64B5F6]" // Blue underline on hover for non-active links
                     } ${navbarColor ? "text-white" : "text-[#233A66]"}`
                   }
@@ -271,7 +271,7 @@ export default function Navbar() {
                     className={({ isActive }) =>
                       `block pb-1 border-b  ${
                         isActive
-                          ? "border-green-500" // Green underline for active link
+                          ? "border-[#64B5F6]" // Green underline for active link
                           : `border-transparent ${
                               navbarColor ? "text-white" : "text-gray-800"
                             } hover:border-[#64B5F6]` // Blue underline on hover, white text when scrolled
@@ -301,7 +301,7 @@ export default function Navbar() {
                       className={({ isActive }) =>
                         `block pb-1 border-b ${
                           isActive
-                            ? "border-green-500"
+                            ? "border-[#64B5F6]"
                             : `border-transparent ${
                                 navbarColor ? "text-white" : "text-gray-800"
                               } hover:border-[#64B5F6]`
