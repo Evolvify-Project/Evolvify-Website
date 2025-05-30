@@ -2,7 +2,7 @@ import axios from "axios";
 import { useFormik } from "formik";
 import { useNavigate, Link } from "react-router-dom";
 import { object, string } from "yup";
-import { jwtDecode } from "jwt-decode"; 
+import { jwtDecode } from "jwt-decode";
 import studentLearningImg from "../../src/assets/images/Learning-rafiki.svg";
 import logo from "../assets/images/logo.png";
 
@@ -37,7 +37,7 @@ export default function Login() {
 
         if (response.data.success) {
           const { accessToken } = response.data.data;
-          
+
           const decoded = jwtDecode(accessToken);
           const username =
             decoded[
@@ -46,8 +46,8 @@ export default function Login() {
           const role =
             decoded[
               "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-            ] || "User"; 
-          
+            ] || "User";
+
           localStorage.setItem("userToken", accessToken);
           localStorage.setItem("username", username);
           localStorage.setItem("userRole", role); // تخزين الـ role

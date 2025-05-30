@@ -77,7 +77,7 @@ export default function Signup() {
         console.log("API Response:", response.data);
 
         if (response.data.success) {
-          navigate("/home");
+          navigate("/login");
         } else {
           setApiError(
             response.data.message || "Signup failed. Please try again."
