@@ -9,42 +9,36 @@ const CoursesPage = () => {
   const [selectedTopic, setSelectedTopic] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const skillsPerPage = 6;
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 10;
 
-  useEffect(() => {
-    const fetchSkills = async () => {
-      try {
-        const response = await axios.get("https://evolvify.runasp.net/api/Courses");
-        setSkills(response.data.data);
-      } catch (error) {
-        console.error("Error fetching skills:", error);
-      }
-    };
-
-    fetchSkills();
-  }, []);
-
-  const filteredSkills = skills.filter((skill) => {
-    const topicMatch = selectedTopic ? skill.skill.toLowerCase() === selectedTopic : true;
-    const levelMatch = selectedLevel ? skill.level.toLowerCase() === selectedLevel : true;
-    return topicMatch && levelMatch;
-  });
-
-  const totalPages = Math.ceil(filteredSkills.length / skillsPerPage);
-  const indexOfLastSkill = currentPage * skillsPerPage;
-  const indexOfFirstSkill = indexOfLastSkill - skillsPerPage;
-  const currentSkills = filteredSkills.slice(indexOfFirstSkill, indexOfLastSkill);
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
+  const fetchSkills = async () => {
+    try {
+      const response = await axios.get("https://evolvify.runasp.net/api/Courses", {
+        params: {
+          pageNumber: currentPage,
+          pageSize: pageSize,
+          skill: selectedTopic || undefined,
+          level: selectedLevel || undefined,
+        },
+      });
+      setSkills(response.data.data);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error("Error fetching skills:", error);
+    }
   };
 
+  useEffect(() => {
+    fetchSkills();
+  }, [currentPage, selectedTopic, selectedLevel]);
+
   const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
   };
 
   const handlePrevious = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
+    if (currentPage > 1) setCurrentPage(prev => prev - 1);
   };
 
   return (
@@ -83,8 +77,8 @@ const CoursesPage = () => {
             className="px-4 py-2 border-2 rounded-lg bg-white"
             value={selectedTopic}
             onChange={(e) => {
+              setCurrentPage(1);
               setSelectedTopic(e.target.value);
-              setCurrentPage(1); // Reset to first page when filtering
             }}
           >
             <option value="">All</option>
@@ -99,8 +93,8 @@ const CoursesPage = () => {
             className="px-4 py-2 border-2 rounded-lg bg-white"
             value={selectedLevel}
             onChange={(e) => {
+              setCurrentPage(1);
               setSelectedLevel(e.target.value);
-              setCurrentPage(1); // Reset to first page when filtering
             }}
           >
             <option value="">Level</option>
@@ -113,46 +107,38 @@ const CoursesPage = () => {
 
       {/* Cards */}
       <div className="cards grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto p-6">
-        {currentSkills.map((skill) => (
-          <SkillCard key={skill.id} skill={skill} />
-        ))}
+        {skills.length > 0 ? (
+          skills.map((skill) => <SkillCard key={skill.id} skill={skill} />)
+        ) : (
+          <p className="text-center col-span-3 text-gray-500">No courses found</p>
+        )}
       </div>
 
-      {/* ✅ Pagination Buttons */}
-      <div className="flex justify-center items-center gap-2 pb-10 flex-wrap">
+      {/* Pagination Buttons */}
+      <div className="flex justify-center items-center gap-4 py-6">
         <button
           onClick={handlePrevious}
           disabled={currentPage === 1}
-          className={`px-4 py-2 rounded-md border ${
+          className={`px-4 py-2 rounded-lg font-semibold text-white transition ${
             currentPage === 1
-              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-              : "bg-gradient-to-r from-[#233A66] to-blue-500 rounded-3xl text-white "
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-darkBlue hover:bg-blue-800"
           }`}
         >
           Previous
         </button>
 
-        {Array.from({ length: totalPages }, (_, index) => (
-          <button
-            key={index}
-            onClick={() => handlePageChange(index + 1)}
-            className={`px-4 py-2 rounded-md border ${
-              currentPage === index + 1
-                ? "bg-darkBlue text-white"
-                : "bg-gray-100 text-darkBlue hover:bg-darkBlue hover:text-white"
-            }`}
-          >
-            {index + 1}
-          </button>
-        ))}
+        <span className="font-medium text-darkBlue">
+          Page {currentPage} of {totalPages}
+        </span>
 
         <button
           onClick={handleNext}
           disabled={currentPage === totalPages}
-          className={`px-4 py-2 rounded-md border ${
+          className={`px-4 py-2 rounded-lg font-semibold text-white transition ${
             currentPage === totalPages
-              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-              : "bg-gradient-to-r from-[#233A66] to-blue-500 rounded-3xl text-white "
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-darkBlue hover:bg-blue-800"
           }`}
         >
           Next
