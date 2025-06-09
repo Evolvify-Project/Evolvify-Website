@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, Outlet } from "react-router-dom";
 import axios from "axios";
@@ -81,7 +80,7 @@ const CoursesPage = () => {
 
         <div className="flex justify-center items-center gap-4">
           <select
-            className="px-4 py-2 border rounded-lg bg-white"
+            className="px-4 py-2 border-2 rounded-lg bg-white"
             value={selectedTopic}
             onChange={(e) => {
               setSelectedTopic(e.target.value);
@@ -97,7 +96,7 @@ const CoursesPage = () => {
           </select>
 
           <select
-            className="px-4 py-2 border rounded-lg bg-white"
+            className="px-4 py-2 border-2 rounded-lg bg-white"
             value={selectedLevel}
             onChange={(e) => {
               setSelectedLevel(e.target.value);

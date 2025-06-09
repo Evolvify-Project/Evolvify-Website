@@ -11,6 +11,7 @@ import PremiumSection from "./pages/Practice";
 import Community from "./pages/Community";
 import Chatbot from "./pages/Chatbot";
 import Quiz from "./pages/Quiz";
+import StartQuizPage from "./pages/StartQuizPage";
 import ResultPage from "./pages/Result";
 import RecommendedPlan from "./pages/RecommendedPlan";
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -25,6 +26,7 @@ import {
 } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import { EmotionProvider } from "./pages/EmotionContext";
+
 
 const basePath = import.meta.env.VITE_BASE_PATH || "";
 
@@ -96,6 +98,11 @@ function App() {
         },
         { path: "chatbot", element: <Chatbot />, errorElement: <ErrorPage /> },
         { path: "quiz", element: <Quiz />, errorElement: <ErrorPage /> },
+        {
+          path: "StartQuizPage",
+          element: <StartQuizPage />,
+          errorElement: <ErrorPage />,
+        },
         {
           path: "result",
           element: <ResultPage />,

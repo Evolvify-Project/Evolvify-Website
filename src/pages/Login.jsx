@@ -51,7 +51,7 @@ export default function Login() {
           localStorage.setItem("userToken", accessToken);
           localStorage.setItem("username", username);
           localStorage.setItem("userRole", role); // تخزين الـ role
-          navigate("/home");
+          navigate("/StartQuizPage");
         } else {
           formik.setErrors({ email: "Login failed: " + response.data.message });
         }
