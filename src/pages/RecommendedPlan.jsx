@@ -90,6 +90,12 @@ const RecommendedPlan = () => {
     return skillResult ? skillResult.level : null;
   };
 
+  const getRecommendedCoursesFlat = () => {
+    return skills.flatMap((skill) =>
+      getRecommendedCourse(skill.category, skill.level, skill.courses)
+    );
+  };
+
   const getRecommendedCourse = (skillCategory, skillLevel, courses) => {
     const userLevel = getUserLevel(skillCategory);
     if (!userLevel || userLevel === skillLevel) return courses.slice(0, 3);
@@ -109,66 +115,7 @@ const RecommendedPlan = () => {
     }
   };
 
-  const redistributeSkills = (skillsArray) => {
-    if (!Array.isArray(skillsArray)) return [];
-
-    const maxPerRow = 3;
-    const maxRows = 5;
-    const totalToShow = maxPerRow * maxRows;
-
-    let limitedSkills = skillsArray.slice(0, totalToShow + 3);
-    let rows = [];
-
-    for (let i = 0; i < limitedSkills.length; i += maxPerRow) {
-      rows.push(limitedSkills.slice(i, i + maxPerRow));
-    }
-
-    const lastRow = rows[rows.length - 1];
-    if (lastRow && lastRow.length < maxPerRow) {
-      rows.pop();
-      lastRow.forEach((card, index) => {
-        const targetIndex = rows.length - 2 + index;
-        if (rows[targetIndex]) {
-          rows[targetIndex].push(card);
-        }
-      });
-    }
-
-    return rows.slice(0, maxRows);
-  };
-
-  const skillsGroups = redistributeSkills(skills);
-
-  const LoadingSkeleton = () => (
-    <div className="w-full max-w-6xl space-y-10">
-      {Array(5)
-        .fill()
-        .map((_, groupIndex) => (
-          <div
-            key={groupIndex}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-center"
-          >
-            {Array(3)
-              .fill()
-              .map((_, index) => (
-                <div
-                  key={index}
-                  className="w-full max-w-[300px] animate-pulse mx-auto"
-                >
-                  <div className="h-6 bg-gray-200 rounded mb-4"></div>
-                  <div className="bg-white rounded-2xl shadow-md w-full h-[420px]">
-                    <div className="w-full h-[250px] bg-gray-200 rounded-t-xl"></div>
-                    <div className="p-4 space-y-2">
-                      <div className="h-5 bg-gray-200 rounded w-3/4 mx-auto"></div>
-                      <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-          </div>
-        ))}
-    </div>
-  );
+  const allCourses = getRecommendedCoursesFlat();
 
   if (loading) {
     return (
@@ -210,86 +157,51 @@ const RecommendedPlan = () => {
           Your Recommended Plan
         </h1>
 
-        <div className="w-full max-w-6xl space-y-10">
-          {skillsGroups.map((skillGroup, groupIndex) => (
+        <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {allCourses.map((course, idx) => (
             <div
-              key={groupIndex}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-center"
+              key={idx}
+              className="bg-white rounded-2xl shadow-md flex flex-col justify-between items-center w-full h-[420px] max-h-[420px] min-h-[420px] transform transition-transform duration-300 hover:scale-105 hover:shadow-lg"
             >
-              {skillGroup.map((skill, index) => {
-                const recommendedCourses = getRecommendedCourse(
-                  skill.category,
-                  skill.level,
-                  skill.courses
-                );
-                return (
-                  <div
-                    key={index}
-                    className="space-y-2 w-full flex justify-center"
-                  >
-                    <div className="w-full max-w-[300px]">
-                      <h2 className="text-xl font-semibold text-[#233A66] text-center mb-4">
-                        {skill.category || "Placeholder"}
-                      </h2>
-                      {(recommendedCourses.length > 0
-                        ? recommendedCourses
-                        : skill.courses || []
-                      ).map((course, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-white rounded-2xl shadow-md flex flex-col justify-between items-center w-full h-[420px] max-h-[420px] min-h-[420px] transform transition-transform duration-300 hover:scale-105 hover:shadow-lg mb-5"
-                        >
-                          <div className="w-full h-[250px] relative">
-                            <img
-                              src={course.image}
-                              alt={course.name}
-                              className="absolute top-0 left-0 w-full h-full object-cover rounded-t-xl"
-                              onError={(e) => {
-                                e.target.src = fallbackImage;
-                              }}
-                            />
-                          </div>
-                          <div className="flex flex-col items-center p-4">
-                            <h3 className="font-semibold text-base sm:text-lg text-[#233A66] text-center mb-2 line-clamp-2">
-                              {course.name}
-                            </h3>
-                            <span
-                              className={`text-md ${getLevelTextColor(
-                                course.level
-                              )} font-semibold`}
-                            >
-                              {course.level}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                      {(!skill.courses || skill.courses.length === 0) && (
-                        <div className="bg-white p-4 rounded-xl shadow-md text-center">
-                          <p className="text-gray-500">
-                            No courses available for this skill.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+              <div className="w-full h-[250px] relative">
+                <img
+                  src={course.image}
+                  alt={course.name}
+                  className="absolute top-0 left-0 w-full h-full object-cover rounded-t-xl"
+                  onError={(e) => {
+                    e.target.src = fallbackImage;
+                  }}
+                />
+              </div>
+              <div className="flex flex-col items-center p-4">
+                <h3 className="font-semibold text-base sm:text-lg text-[#233A66] text-center mb-2 line-clamp-2">
+                  {course.name}
+                </h3>
+                <span
+                  className={`text-md ${getLevelTextColor(
+                    course.level
+                  )} font-semibold`}
+                >
+                  {course.level}
+                </span>
+              </div>
             </div>
           ))}
-          {skills.length === 0 && (
-            <div className="bg-white p-6 rounded-xl shadow-md max-w-md text-center">
-              <p className="text-gray-500 mb-4">
-                No recommended skills or courses found.
-              </p>
-              <button
-                onClick={handleRetry}
-                className="bg-blue-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-blue-600 transition"
-              >
-                Retry
-              </button>
-            </div>
-          )}
         </div>
+
+        {allCourses.length === 0 && (
+          <div className="bg-white p-6 rounded-xl shadow-md max-w-md text-center mt-6">
+            <p className="text-gray-500 mb-4">
+              No recommended courses available.
+            </p>
+            <button
+              onClick={handleRetry}
+              className="bg-blue-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-blue-600 transition"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         <button
           onClick={handleSkip}

@@ -37,7 +37,7 @@ const ErrorPage = ({ error }) => (
       <h1 className="text-2xl font-bold text-red-600">
         Oops! Something Went Wrong
       </h1>
-      <p className="text-gray-600 mt-2">
+      <p className="text-gray-700 mt-2">
         {error?.message || "An unexpected error occurred."}
       </p>
       <button
@@ -96,8 +96,6 @@ function App() {
           element: <Community />,
           errorElement: <ErrorPage />,
         },
-        { path: "chatbot", element: <Chatbot />, errorElement: <ErrorPage /> },
-        { path: "quiz", element: <Quiz />, errorElement: <ErrorPage /> },
         {
           path: "StartQuizPage",
           element: <StartQuizPage />,
@@ -134,9 +132,11 @@ function App() {
           element: <PresentationTestPage />,
           errorElement: <ErrorPage />,
         },
-        { path: "*", element: <NotFound /> },
       ],
     },
+    { path: "quiz", element: <Quiz />, errorElement: <ErrorPage /> },
+    { path: "chatbot", element: <Chatbot />, errorElement: <ErrorPage /> },
+    { path: "*", element: <NotFound /> },
   ]);
 
   return (
