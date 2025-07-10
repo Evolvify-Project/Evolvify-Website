@@ -231,7 +231,7 @@ function Quiz() {
     );
   }
 
-  // إذا مفيش أسئلة
+  // لو مفيش أسئلة
   if (!questions || !questions.length) {
     return (
       <section className="min-h-screen w-full bg-[#233A66] flex flex-col">
