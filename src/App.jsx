@@ -12,6 +12,9 @@ import Community from "./pages/Community";
 import Chatbot from "./pages/Chatbot";
 import Quiz from "./pages/Quiz";
 import StartQuizPage from "./pages/StartQuizPage";
+import ModuleQuizPage from "./pages/ModuleQuizPage";
+import ModuleAssessment from "./pages/ModuleAssessment";
+import ModuleQuizResults from "./pages/ModuleQuizResults";
 import ResultPage from "./pages/Result";
 import RecommendedPlan from "./pages/RecommendedPlan";
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -26,7 +29,6 @@ import {
 } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import { EmotionProvider } from "./pages/EmotionContext";
-
 
 const basePath = import.meta.env.VITE_BASE_PATH || "";
 
@@ -99,6 +101,21 @@ function App() {
         {
           path: "StartQuizPage",
           element: <StartQuizPage />,
+          errorElement: <ErrorPage />,
+        },
+        {
+          path: "module-quiz/:moduleId/:moduleName",
+          element: <ModuleQuizPage />,
+          errorElement: <ErrorPage />,
+        },
+        {
+          path: "module-assessment/:moduleId/:moduleName",
+          element: <ModuleAssessment />,
+          errorElement: <ErrorPage />,
+        },
+        {
+          path: "module-quiz-results/:moduleId/:moduleName",
+          element: <ModuleQuizResults />,
           errorElement: <ErrorPage />,
         },
         {
