@@ -245,13 +245,13 @@ export default function SkillPage() {
                           try {
                             await updateModuleProgress(activeModule.id, true);
                             navigate(
-                              `/module-quiz/${activeModule.id}/${activeModule.title}`
+                              `/course-quiz/${id}/${skillContent.title}`
                             );
                           } catch (error) {
                             console.error("Error updating progress:", error);
                             alert(`Error updating progress: ${error.message}`);
                             navigate(
-                              `/module-quiz/${activeModule.id}/${activeModule.title}`
+                              `/course-quiz/${id}/${skillContent.title}`
                             );
                           } finally {
                             setIsSubmitting(false);
@@ -268,7 +268,7 @@ export default function SkillPage() {
                         ) : (
                           <>
                             <i className="fas fa-check mr-2"></i>
-                            Finish Course
+                            Finish Course & Take Quiz
                           </>
                         )}
                       </button>

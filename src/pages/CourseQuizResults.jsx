@@ -2,31 +2,31 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaTrophy, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
-export default function ModuleQuizResults() {
+export default function CourseQuizResults() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { moduleId, moduleName } = useParams();
+  const { courseId, courseName } = useParams();
 
   // Get the results from location state
   const {
     score,
     totalQuestions,
     correctAnswers,
-    moduleName: stateModuleName,
+    courseName: stateCourseName,
   } = location.state || {};
 
-  const finalModuleName = moduleName || stateModuleName || "Module";
+  const finalCourseName = courseName || stateCourseName || "Course";
   const finalScore = score || 0;
   const finalTotalQuestions = totalQuestions || 5;
   const finalCorrectAnswers = correctAnswers || 0;
 
   const getScoreMessage = () => {
     if (finalScore >= 80) {
-      return "Excellent! You've mastered this module.";
+      return "Excellent! You've mastered this course.";
     } else if (finalScore >= 60) {
       return "Good job! You have a solid understanding.";
     } else {
-      return "Keep practicing! Review the module content.";
+      return "Keep practicing! Review the course content.";
     }
   };
 
@@ -49,7 +49,7 @@ export default function ModuleQuizResults() {
   };
 
   const handleRetake = () => {
-    navigate(`/module-quiz/${moduleId}/${finalModuleName}`);
+    navigate(`/course-quiz/${courseId}/${finalCourseName}`);
   };
 
   return (
@@ -65,7 +65,7 @@ export default function ModuleQuizResults() {
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">{getScoreIcon()}</div>
             <h1 className="text-3xl font-bold text-[#1E3A5F] mb-2">
-              {finalModuleName}
+              {finalCourseName}
               <br />
               Quiz Results
             </h1>

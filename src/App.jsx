@@ -12,9 +12,9 @@ import Community from "./pages/Community";
 import Chatbot from "./pages/Chatbot";
 import Quiz from "./pages/Quiz";
 import StartQuizPage from "./pages/StartQuizPage";
-import ModuleQuizPage from "./pages/ModuleQuizPage";
-import ModuleAssessment from "./pages/ModuleAssessment";
-import ModuleQuizResults from "./pages/ModuleQuizResults";
+import CourseQuizPage from "./pages/CourseQuizPage";
+import CourseAssessment from "./pages/CourseAssessment";
+import CourseQuizResults from "./pages/CourseQuizResults";
 import ResultPage from "./pages/Result";
 import RecommendedPlan from "./pages/RecommendedPlan";
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -139,18 +139,18 @@ function App() {
     { path: "quiz", element: <Quiz />, errorElement: <ErrorPage /> },
     { path: "chatbot", element: <Chatbot />, errorElement: <ErrorPage /> },
     {
-      path: "module-quiz/:moduleId/:moduleName",
-      element: <ModuleQuizPage />,
+      path: "course-quiz/:courseId/:courseName",
+      element: <CourseQuizPage />,
       errorElement: <ErrorPage />,
     },
     {
-      path: "module-assessment/:moduleId/:moduleName",
-      element: <ModuleAssessment />,
+      path: "course-assessment/:courseId/:courseName",
+      element: <CourseAssessment />,
       errorElement: <ErrorPage />,
     },
     {
-      path: "module-quiz-results/:moduleId/:moduleName",
-      element: <ModuleQuizResults />,
+      path: "course-quiz-results/:courseId/:courseName",
+      element: <CourseQuizResults />,
       errorElement: <ErrorPage />,
     },
     { path: "*", element: <NotFound /> },

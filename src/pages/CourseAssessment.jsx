@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 
-export default function ModuleAssessment() {
-  const { moduleId, moduleName } = useParams();
+export default function CourseAssessment() {
+  const { courseId, courseName } = useParams();
   const navigate = useNavigate();
 
-  // Static questions for the module assessment
-  const moduleQuestions = [
+  // Static questions for the course assessment
+  const courseQuestions = [
     {
-      questionText: `What is the main focus of ${moduleName}?`,
+      questionText: `What is the main focus of ${courseName}?`,
       choices: {
         A: "Technical skills only",
         B: "Soft skills development",
@@ -19,7 +19,7 @@ export default function ModuleAssessment() {
       correctAnswer: "C",
     },
     {
-      questionText: `Which of the following is most important in ${moduleName}?`,
+      questionText: `Which of the following is most important in ${courseName}?`,
       choices: {
         A: "Speed",
         B: "Accuracy",
@@ -29,7 +29,7 @@ export default function ModuleAssessment() {
       correctAnswer: "D",
     },
     {
-      questionText: `What is the best approach to master ${moduleName}?`,
+      questionText: `What is the best approach to master ${courseName}?`,
       choices: {
         A: "Practice once",
         B: "Regular practice and feedback",
@@ -39,7 +39,7 @@ export default function ModuleAssessment() {
       correctAnswer: "B",
     },
     {
-      questionText: `Which skill is complementary to ${moduleName}?`,
+      questionText: `Which skill is complementary to ${courseName}?`,
       choices: {
         A: "Time management",
         B: "Technical expertise",
@@ -49,7 +49,7 @@ export default function ModuleAssessment() {
       correctAnswer: "D",
     },
     {
-      questionText: `How often should you practice ${moduleName}?`,
+      questionText: `How often should you practice ${courseName}?`,
       choices: {
         A: "Once a month",
         B: "Once a week",
@@ -60,7 +60,7 @@ export default function ModuleAssessment() {
     },
   ];
 
-  const [questions] = useState(moduleQuestions);
+  const [questions] = useState(courseQuestions);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [progress, setProgress] = useState(0);
@@ -106,8 +106,8 @@ export default function ModuleAssessment() {
   };
 
   const handleContinue = () => {
-    // Navigate to quiz results page with score data
-    navigate(`/module-quiz-results/${moduleId}/${moduleName}`, {
+    // Navigate to course quiz results page with score data
+    navigate(`/course-quiz-results/${courseId}/${courseName}`, {
       state: {
         score: Math.round(
           (Object.values(answers).filter(
@@ -120,7 +120,7 @@ export default function ModuleAssessment() {
         correctAnswers: Object.values(answers).filter(
           (answer, index) => answer === questions[index].correctAnswer
         ).length,
-        moduleName: moduleName,
+        courseName: courseName,
       },
     });
   };
@@ -167,13 +167,13 @@ export default function ModuleAssessment() {
   }, [showResult, score]);
 
   return (
-    <section className="ModuleAssessment">
+    <section className="CourseAssessment">
       <div className="mx-auto min-h-screen p-6 bg-[#233A66] py-6 shadow-md">
         <div className="mb-6 text-center">
           <h1 className="text-3xl mt-2 font-bold text-white">
-            {moduleName} Assessment
+            {courseName} Assessment
           </h1>
-          <p className="text-md text-gray-200">Module completion quiz</p>
+          <p className="text-md text-gray-200">Course completion quiz</p>
         </div>
 
         <div className="max-w-xl w-full text-center mx-auto p-3 sm:p-6 mt-16 relative z-10">
@@ -181,7 +181,7 @@ export default function ModuleAssessment() {
             <div className="card bg-white shadow-md rounded-lg p-6 flex flex-col items-center gap-5">
               <div className="mt-4">{getResultIcon()}</div>
               <h2 className="text-2xl font-semibold text-[#1E3A5F]">
-                {moduleName} Assessment completed!!
+                {courseName} Assessment completed!!
               </h2>
               <div className="flex justify-between items-center w-full max-w-xs border border-gray-300 rounded-lg p-2">
                 <span className="text-lg font-medium text-[#1E3A5F]">
