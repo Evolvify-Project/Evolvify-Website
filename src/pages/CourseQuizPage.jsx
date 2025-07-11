@@ -22,8 +22,10 @@ export default function CourseQuizPage() {
           <FaQuestionCircle />
         </div>
         <h2 className="text-2xl font-bold mb-3 text-[#1E3A5F]">
-          Ready for the {courseName} Quiz?
+          Ready for the <span className="text-[#67B4FF]">{courseName}</span>{" "}
+          Quiz?
         </h2>
+
         <p className="text-gray-600 mb-2">
           You're about to begin the {courseName} quiz. It contains{" "}
           <strong>5 quick questions</strong> and will take around{" "}

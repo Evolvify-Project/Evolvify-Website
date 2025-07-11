@@ -366,16 +366,6 @@ function Quiz() {
               Finish
             </button>
           </div>
-
-          {/* Skip Button */}
-          <div className="flex font-semibold justify-center mt-4">
-            <button
-              onClick={() => navigate("/courses")}
-              className="px-6 py-2 bg-gray-200 text-[#1E3A5F] rounded-full hover:bg-gray-300 transition-all duration-300 ease-in-out active:scale-95"
-            >
-              Skip Quiz
-            </button>ّ
-          </div>
         </div>
       </div>
     </section>

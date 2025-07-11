@@ -1,5 +1,3 @@
-
-
 import { Link } from "react-router-dom";
 
 const SkillCard = ({ skill }) => {
@@ -22,12 +20,23 @@ const SkillCard = ({ skill }) => {
         </p>
 
         <div className="flex flex-wrap gap-2 mt-2">
-          <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
+          <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs">
             {skill.skill}
           </span>
-          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">
+          <span
+            className={`px-2 py-1 rounded-full text-xs ${
+              skill.level === "Beginner"
+                ? "bg-red-100 text-red-700"
+                : skill.level === "Intermediate"
+                ? "bg-yellow-100 text-yellow-700"
+                : skill.level === "Advanced"
+                ? "bg-green-100 text-green-700"
+                : "bg-gray-100 text-gray-700" // fallback color
+            }`}
+          >
             {skill.level}
           </span>
+
           <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs ml-auto">
             ⏱ {skill.duration}
           </span>

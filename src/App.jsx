@@ -5,7 +5,6 @@ import Home from "./pages/Home";
 import Courses from "./pages/Courses/Courses";
 import SkillDetailsPage from "./pages/Courses/SkillDetails";
 import LearningUnitPage from "./pages/Courses/LearningUnitPage";
-import AssessmentSection from "./pages/Courses/AssessmentSection";
 import NotFound from "./pages/NotFound/NotFound";
 import PremiumSection from "./pages/Practice";
 import Community from "./pages/Community";
@@ -81,11 +80,6 @@ function App() {
         {
           path: "courses/:id/learning-unit",
           element: <LearningUnitPage />,
-          errorElement: <ErrorPage />,
-        },
-        {
-          path: "courses/:id/assessment",
-          element: <AssessmentSection />,
           errorElement: <ErrorPage />,
         },
         {

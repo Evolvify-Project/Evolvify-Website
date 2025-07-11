@@ -32,12 +32,23 @@ export default function StartQuizPage() {
           This quiz helps us understand your current skill level to personalize
           your learning path.
         </p>
-        <button
-          onClick={handleStartQuiz}
-          className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition"
-        >
-          Go to Quiz
-        </button>
+        <div className="flex justify-center gap-4 mt-4">
+          {/* Go To Button */}
+          <button
+            onClick={handleStartQuiz}
+            className="px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-300 ease-in-out active:scale-95"
+          >
+            Go to Quiz
+          </button>
+
+          {/* Skip Button */}
+          <button
+            onClick={() => navigate("/courses")}
+            className="px-6 py-3 bg-gray-200 text-[#1E3A5F] rounded-full hover:bg-gray-300 transition-all duration-300 ease-in-out active:scale-95"
+          >
+            Skip Quiz
+          </button>
+        </div>
       </motion.div>
     </div>
   );
