@@ -50,8 +50,32 @@ export default function Login() {
 
           localStorage.setItem("userToken", accessToken);
           localStorage.setItem("username", username);
-          localStorage.setItem("userRole", role); // تخزين الـ role
-          navigate("/StartQuizPage");
+          localStorage.setItem("userRole", role);
+
+          // Check if user has completed initial assessment
+          try {
+            const assessmentResponse = await axios.get(
+              "https://evolvify.runasp.net/api/Assessments/Result",
+              {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                },
+              }
+            );
+
+            // If user has assessment results, they're an existing user
+            if (
+              assessmentResponse.data.success &&
+              assessmentResponse.data.data
+            ) {
+              navigate("/courses"); // Go directly to courses for existing users
+            } else {
+              navigate("/StartQuizPage"); // New users go to initial quiz
+            }
+          } catch (assessmentError) {
+            console.log("No assessment results found, redirecting to quiz");
+            navigate("/StartQuizPage"); // Default to quiz if assessment check fails
+          }
         } else {
           formik.setErrors({ email: "Login failed: " + response.data.message });
         }
