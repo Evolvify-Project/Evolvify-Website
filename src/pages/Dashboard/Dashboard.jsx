@@ -394,7 +394,12 @@ const Dashboard = () => {
 
               {/* Assessment Result */}
               <div className="flex-1 mt-4 sm:mt-5 lg:mt-0 lg:ml-10">
-                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg border border-blue-200">
+                <div
+                  onClick={() => navigate("/recommended-plan")}
+                  className="bg-white p-4 sm:p-6 rounded-lg shadow-lg border border-blue-200
+             cursor-pointer transition-transform duration-200 ease-in-out
+             hover:-translate-y-1 hover:shadow-md"
+                >
                   <h2 className="text-[#233A66] text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-3">
                     Assessment Result
                   </h2>

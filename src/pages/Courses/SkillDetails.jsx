@@ -182,12 +182,12 @@ export default function SkillPage() {
 
               {/* Navigation Buttons - Always Visible */}
               {activeModule && (
-                <div className="bg-red-100 border-2 border-red-500 p-6 rounded-lg mt-8">
+                <div className="bg-gray-100 border-2 border-[#233A66] p-6 rounded-lg mt-8">
                   <div className="text-center mb-4">
-                    <h3 className="text-lg font-bold text-red-700">
+                    <h3 className="text-xl font-bold text-[#233A66]">
                       Navigation Controls
                     </h3>
-                    <p className="text-sm text-red-600">
+                    <p className="text-base text-[#5BBEF1]">
                       Module: {activeModule.title} ({activeModuleIndex + 1} of{" "}
                       {skillContent.modules.length})
                     </p>
@@ -223,7 +223,7 @@ export default function SkillPage() {
                           }
                         }}
                         disabled={isSubmitting}
-                        className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-bold"
+                        className="flex items-center px-6 py-3 bg-gradient-to-r from-[#5BBEF1] to-[#233A66]  text-white rounded-lg disabled:opacity-50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ease-out"
                       >
                         {isSubmitting ? (
                           <>
@@ -258,7 +258,7 @@ export default function SkillPage() {
                           }
                         }}
                         disabled={isSubmitting}
-                        className="flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 disabled:opacity-50 transition-all duration-300 font-bold"
+                        className="flex items-center font-bold px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 disabled:opacity-50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ease-out"
                       >
                         {isSubmitting ? (
                           <>

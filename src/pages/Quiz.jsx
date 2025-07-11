@@ -330,7 +330,7 @@ function Quiz() {
 
           {/* Navigation Buttons */}
           <div className="flex flex-wrap justify-between items-center mt-6 gap-3">
-            {/* Previous Buttons */}
+            {/* Previous Button */}
             <button
               onClick={handlePrevious}
               disabled={currentQuestion === 0}
@@ -340,7 +340,7 @@ function Quiz() {
               Previous
             </button>
 
-            {/* Next Buttons */}
+            {/* Next Button */}
             <button
               onClick={handleNext}
               disabled={
@@ -353,7 +353,7 @@ function Quiz() {
               <i className="fas fa-chevron-right ml-2"></i>
             </button>
 
-            {/* Finish Buttons */}
+            {/* Finish Button */}
             <button
               onClick={handleFinish}
               disabled={Object.keys(answers).length !== questions.length}
@@ -365,6 +365,16 @@ function Quiz() {
             >
               Finish
             </button>
+          </div>
+
+          {/* Skip Button */}
+          <div className="flex font-semibold justify-center mt-4">
+            <button
+              onClick={() => navigate("/courses")}
+              className="px-6 py-2 bg-gray-200 text-[#1E3A5F] rounded-full hover:bg-gray-300 transition-all duration-300 ease-in-out active:scale-95"
+            >
+              Skip Quiz
+            </button>ّ
           </div>
         </div>
       </div>

@@ -65,13 +65,19 @@ export default function ModuleQuizResults() {
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">{getScoreIcon()}</div>
             <h1 className="text-3xl font-bold text-[#1E3A5F] mb-2">
-              {finalModuleName} Quiz Results
+              {finalModuleName}
+              <br />
+              Quiz Results
             </h1>
             <p className="text-gray-600">{getScoreMessage()}</p>
           </div>
 
           {/* Score Card */}
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 mb-8 text-white">
+          <div
+            className="bg-gradient-to-r from-[#5BBEF1] to-[#233A66] rounded-xl p-6 mb-8 text-white
+             transition duration-300 ease-in-out
+             hover:scale-102 hover:shadow-xl"
+          >
             <div className="text-center">
               <div className="text-6xl font-bold mb-2">{finalScore}%</div>
               <div className="text-lg opacity-90">Your Score</div>
@@ -80,18 +86,18 @@ export default function ModuleQuizResults() {
 
           {/* Detailed Results */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-green-50 rounded-xl p-6 text-center">
+            <div className="bg-green-200 rounded-xl p-6 text-center">
               <div className="text-3xl font-bold text-green-600 mb-2">
                 {finalCorrectAnswers}
               </div>
               <div className="text-green-700 font-medium">Correct Answers</div>
             </div>
 
-            <div className="bg-blue-50 rounded-xl p-6 text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">
+            <div className="bg-red-200 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-red-600 mb-2">
                 {finalTotalQuestions - finalCorrectAnswers}
               </div>
-              <div className="text-blue-700 font-medium">Incorrect Answers</div>
+              <div className="text-red-700 font-medium">Incorrect Answers</div>
             </div>
           </div>
 
@@ -107,7 +113,13 @@ export default function ModuleQuizResults() {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div
-                className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full transition-all duration-500"
+                className={`h-3 rounded-full transition-all duration-500 ${
+                  finalScore < 60
+                    ? "bg-red-500"
+                    : finalScore < 80
+                    ? "bg-yellow-400"
+                    : "bg-green-500"
+                }`}
                 style={{ width: `${finalScore}%` }}
               ></div>
             </div>
@@ -148,13 +160,17 @@ export default function ModuleQuizResults() {
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={handleContinue}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+              className="flex-1 bg-gradient-to-r from-[#5BBEF1] to-[#233A66] text-white py-3 px-6 rounded-xl font-medium
+               relative overflow-hidden transition-all duration-300 ease-out
+               hover:scale-105 hover:shadow-lg hover:brightness-110"
             >
               Continue Learning
             </button>
             <button
               onClick={handleRetake}
-              className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-medium hover:bg-gray-300 transition-all duration-300"
+              className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-medium
+               transition-all duration-300 ease-out
+               hover:scale-105 hover:shadow-md hover:bg-gray-300"
             >
               Retake Quiz
             </button>

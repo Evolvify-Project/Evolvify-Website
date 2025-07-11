@@ -104,21 +104,6 @@ function App() {
           errorElement: <ErrorPage />,
         },
         {
-          path: "module-quiz/:moduleId/:moduleName",
-          element: <ModuleQuizPage />,
-          errorElement: <ErrorPage />,
-        },
-        {
-          path: "module-assessment/:moduleId/:moduleName",
-          element: <ModuleAssessment />,
-          errorElement: <ErrorPage />,
-        },
-        {
-          path: "module-quiz-results/:moduleId/:moduleName",
-          element: <ModuleQuizResults />,
-          errorElement: <ErrorPage />,
-        },
-        {
           path: "result",
           element: <ResultPage />,
           errorElement: <ErrorPage />,
@@ -153,6 +138,21 @@ function App() {
     },
     { path: "quiz", element: <Quiz />, errorElement: <ErrorPage /> },
     { path: "chatbot", element: <Chatbot />, errorElement: <ErrorPage /> },
+    {
+      path: "module-quiz/:moduleId/:moduleName",
+      element: <ModuleQuizPage />,
+      errorElement: <ErrorPage />,
+    },
+    {
+      path: "module-assessment/:moduleId/:moduleName",
+      element: <ModuleAssessment />,
+      errorElement: <ErrorPage />,
+    },
+    {
+      path: "module-quiz-results/:moduleId/:moduleName",
+      element: <ModuleQuizResults />,
+      errorElement: <ErrorPage />,
+    },
     { path: "*", element: <NotFound /> },
   ]);
 

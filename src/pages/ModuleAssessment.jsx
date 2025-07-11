@@ -170,7 +170,7 @@ export default function ModuleAssessment() {
     <section className="ModuleAssessment">
       <div className="mx-auto min-h-screen p-6 bg-[#233A66] py-6 shadow-md">
         <div className="mb-6 text-center">
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl mt-2 font-bold text-white">
             {moduleName} Assessment
           </h1>
           <p className="text-md text-gray-200">Module completion quiz</p>
