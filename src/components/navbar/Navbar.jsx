@@ -8,23 +8,18 @@ import axios from "axios";
 
 // Define Navbar component
 export default function Navbar() {
-  // States for controlling component visibility
-  const [isOpen, setIsOpen] = useState(false); // Mobile menu
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Login status
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Profile dropdown
-  const [profileImage, setProfileImage] = useState(placeHolderImg); // Profile image
-  const [isScrolled, setIsScrolled] = useState(false); // Scroll status
-  const [navbarColor, setNavbarColor] = useState(false); // Background color on scroll
-  const navigate = useNavigate(); // For navigation
-  const dropdownRef = useRef(null); // Reference for dropdown to close on outside click
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState(placeHolderImg);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [navbarColor, setNavbarColor] = useState(false);
+  const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
-  // Toggle mobile menu
   const toggleMenu = () => setIsOpen(!isOpen);
-
-  // Toggle profile dropdown
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
-  // Validate URL
   const isValidUrl = (url) => {
     try {
       new URL(url);
@@ -34,10 +29,9 @@ export default function Navbar() {
     }
   };
 
-  // Check login status and fetch profile image
   useEffect(() => {
     const token = localStorage.getItem("userToken");
-    setIsLoggedIn(!!token); // Set login status based on token
+    setIsLoggedIn(!!token);
 
     if (token) {
       axios
@@ -50,24 +44,22 @@ export default function Navbar() {
         .then((response) => {
           if (response.data && response.data.success) {
             let imageUrl = response.data.data?.imageUrl;
-            // Set profile image if URL is valid, else use placeholder
             if (imageUrl && isValidUrl(imageUrl)) {
               setProfileImage(imageUrl);
             } else {
               setProfileImage(placeHolderImg);
             }
           } else {
-            setProfileImage(placeHolderImg); // Fallback if no success
+            setProfileImage(placeHolderImg);
           }
         })
         .catch((error) => {
           console.error("Error fetching profile image:", error);
-          setProfileImage(placeHolderImg); // Fallback on error
+          setProfileImage(placeHolderImg);
         });
     }
   }, []);
 
-  // Control background color on scroll
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
@@ -79,7 +71,6 @@ export default function Navbar() {
     };
   }, []);
 
-  // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("userToken");
     localStorage.removeItem("username");
@@ -90,7 +81,6 @@ export default function Navbar() {
     navigate("/login");
   };
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -107,7 +97,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Navbar */}
       <nav
         className={`p-5 shadow-md transition-all duration-300 ${
           navbarColor ? "bg-darkBlue text-white" : "bg-slate-100 text-gray-800"
@@ -116,7 +105,6 @@ export default function Navbar() {
         }`}
       >
         <div className="container mx-auto flex items-center justify-between gap-4">
-          {/* Website logo */}
           <Link to="/">
             <img
               src={navbarColor ? logoLight : logoDark}
@@ -125,42 +113,30 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* Page links (desktop view) */}
-          <ul className="hidden md:flex gap-8 items-center">
-            {[
-              "Home",
-              "Courses",
-              "Practice",
-              "Community",
-              "Chatbot",
-              "EvolviSense",
-            ].map((item) => (
-              <li key={item}>
-                <NavLink
-                  to={
-                    item === "EvolviSense"
-                      ? "./presentation-test"
-                      : `./${item.toLowerCase()}`
-                  }
-                  className={({ isActive }) =>
-                    `inline-block pb-2 relative before:content-[''] before:absolute before:w-0 before:h-0.5 before:rounded-md before:left-0 before:-bottom-1 before:transition-[width] before:duration-300 ${
-                      isActive
-                        ? "before:w-full before:bg-[#64B5F6]"
-                        : "hover:before:w-full hover:before:bg-[#64B5F6]"
-                    } ${navbarColor ? "text-white" : "text-[#233A66]"}`
-                  }
-                >
-                  {item}
-                </NavLink>
-              </li>
-            ))}
+          <ul className="hidden md:flex gap-14 items-center">
+            {["Home", "Courses", "Practice", "Community", "Chatbot"].map(
+              (item) => (
+                <li key={item}>
+                  <NavLink
+                    to={`./${item.toLowerCase()}`}
+                    className={({ isActive }) =>
+                      `inline-block pb-2 relative before:content-[''] before:absolute before:w-0 before:h-0.5 before:rounded-md before:left-0 before:-bottom-1 before:transition-[width] before:duration-300 ${
+                        isActive
+                          ? "before:w-full before:bg-[#64B5F6]"
+                          : "hover:before:w-full hover:before:bg-[#64B5F6]"
+                      } ${navbarColor ? "text-white" : "text-[#233A66]"}`
+                    }
+                  >
+                    {item}
+                  </NavLink>
+                </li>
+              )
+            )}
           </ul>
 
-          {/* Profile or register button (desktop view) */}
           <div className="hidden md:block">
             {isLoggedIn ? (
               <div className="relative" ref={dropdownRef}>
-                {/* Profile image and arrow */}
                 <div className="flex items-center gap-2">
                   <button
                     className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#64B5F6] focus:outline-none"
@@ -184,7 +160,6 @@ export default function Navbar() {
                   />
                 </div>
 
-                {/* Dropdown menu */}
                 {isDropdownOpen && (
                   <div
                     className={`absolute right-0 mt-2 w-48 border border-gray-200 rounded-md shadow-lg z-10 ${
@@ -213,11 +188,7 @@ export default function Navbar() {
                       <li>
                         <button
                           onClick={handleLogout}
-                          className={`w-full text-left px-4 py-2 rounded-md text-md ${
-                            navbarColor
-                              ? "hover:bg-red-500"
-                              : "hover:bg-red-500"
-                          }`}
+                          className={`w-full text-left px-4 py-2 rounded-md text-md hover:bg-red-500`}
                         >
                           <i className="fa-solid fa-right-from-bracket mr-4 sm:mr-2"></i>
                           Logout
@@ -238,7 +209,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile menu toggle button */}
           <div className="md:hidden">
             <button onClick={toggleMenu}>
               {isOpen ? (
@@ -250,42 +220,31 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile menu */}
         {isOpen && (
           <div className="md:hidden mt-4 px-4">
             <ul className="flex flex-col gap-4">
-              {[
-                "Home",
-                "Courses",
-                "Practice",
-                "Community",
-                "Chatbot",
-                "EvolviSense",
-              ].map((item) => (
-                <li key={item}>
-                  <NavLink
-                    to={
-                      item === "EvolviSense"
-                        ? "./presentation-test"
-                        : `./${item.toLowerCase()}`
-                    }
-                    className={({ isActive }) =>
-                      `block pb-1 border-b ${
-                        isActive
-                          ? "border-[#64B5F6]"
-                          : `border-transparent ${
-                              navbarColor ? "text-white" : "text-gray-800"
-                            } hover:border-[#64B5F6]`
-                      }`
-                    }
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {item}
-                  </NavLink>
-                </li>
-              ))}
+              {["Home", "Courses", "Practice", "Community", "Chatbot"].map(
+                (item) => (
+                  <li key={item}>
+                    <NavLink
+                      to={`./${item.toLowerCase()}`}
+                      className={({ isActive }) =>
+                        `block pb-1 border-b ${
+                          isActive
+                            ? "border-[#64B5F6]"
+                            : `border-transparent ${
+                                navbarColor ? "text-white" : "text-gray-800"
+                              } hover:border-[#64B5F6]`
+                        }`
+                      }
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {item}
+                    </NavLink>
+                  </li>
+                )
+              )}
 
-              {/* Register or logout options based on login status */}
               {!isLoggedIn ? (
                 <li>
                   <Link to="/signup" onClick={() => setIsOpen(false)}>
@@ -330,7 +289,6 @@ export default function Navbar() {
         )}
       </nav>
 
-      {/* Placeholder div for padding when navbar is fixed */}
       <div className={`${isScrolled ? "md:pt-20 hidden md:block" : ""}`}></div>
     </>
   );
