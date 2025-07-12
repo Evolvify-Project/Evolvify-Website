@@ -42,7 +42,9 @@ const PremiumSection = () => {
     try {
       const response = await axios.post(
         "https://evolvify.runasp.net/api/Payment/create-subscription",
-        `"${selectedPlan.stripePriceId}"`, // Send stripePriceId as string
+        {
+          priceId: selectedPlan.stripePriceId,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
