@@ -529,8 +529,9 @@ const EvolviSense = ({
                     autoPlay
                     playsInline
                     muted
-                    className="w-full h-[400px] object-cover rounded-2xl"
-                    style={{ display: cameraActive ? "block" : "none" }}
+                    className={`w-full h-[400px] object-cover rounded-2xl ${
+                      cameraActive ? "block" : "hidden"
+                    }`}
                   />
                   {!cameraActive && (
                     <div className="w-full h-[400px] flex items-center justify-center bg-gray-200 rounded-2xl">
