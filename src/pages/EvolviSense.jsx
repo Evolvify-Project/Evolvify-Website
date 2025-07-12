@@ -394,11 +394,12 @@ const EvolviSense = ({
           confidence: data.mental_health.confidence.toFixed(1),
           anxiety: data.mental_health.anxiety.toFixed(1),
           stress: data.mental_health.stress.toFixed(1),
-          primaryEmotion: Object.keys(data.emotions).reduce(
-            (a, b) =>
-              data.emotions[a].length > data.emotions[b].length ? a : b,
-            "neutral"
-          ),
+          primaryEmotion: Object.keys(data.emotions).reduce((a, b) => {
+            const emotionA = data.emotions[a];
+            const emotionB = data.emotions[b];
+            if (!emotionA || !emotionB) return a || b || "neutral";
+            return emotionA.length > emotionB.length ? a : b;
+          }, "neutral"),
           peakStress: data.peak_stress.toFixed(1),
           emotionalStability: (
             100 -
