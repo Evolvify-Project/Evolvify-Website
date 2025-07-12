@@ -54,15 +54,13 @@ const EvolviSense = ({
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [cameraStream, setCameraStream] = useState(null);
   const [videoDuration, setVideoDuration] = useState(0);
-  const [countdown, setCountdown] = useState(null);
-  const [currentPrompt, setCurrentPrompt] = useState(0);
-  const [promptTimer, setPromptTimer] = useState(durationPerPrompt);
   const [uploadStatus, setUploadStatus] = useState({
     message: "",
     progress: 0,
   });
   const [isUploading, setIsUploading] = useState(false);
   const [isRecordingFinished, setIsRecordingFinished] = useState(false);
+  const [recordedFileExtension, setRecordedFileExtension] = useState("webm");
   const {
     emotionData,
     setEmotionData,
@@ -73,9 +71,43 @@ const EvolviSense = ({
 
   const totalPrompts = prompts.length;
 
+  // Timer refactor: single source of truth
+  const [testStartTime, setTestStartTime] = useState(null);
+  const [now, setNow] = useState(Date.now());
+
   const showMessage = (text, type = "info") => {
     setMessage({ text, type });
     setTimeout(() => setMessage(null), 5000);
+  };
+
+  const stopCameraStream = () => {
+    console.log("Stopping camera stream...");
+    if (cameraStream) {
+      console.log(
+        "Found camera stream with tracks:",
+        cameraStream.getTracks().length
+      );
+      cameraStream.getTracks().forEach((track) => {
+        console.log(
+          "Stopping track:",
+          track.kind,
+          track.label,
+          "enabled:",
+          track.enabled
+        );
+        track.stop();
+      });
+      setCameraStream(null);
+      console.log("Camera stream stopped and cleared");
+    }
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+      videoRef.current.pause();
+      console.log("Video element cleared");
+    }
+
+    setCameraActive(false);
   };
 
   const checkCameraPermission = async () => {
@@ -114,54 +146,99 @@ const EvolviSense = ({
     }
   };
 
-  // Timer effect
+  // Timer interval: update 'now' every 100ms when recording
+  // Removed redundant timer interval - now using single interval below
+
+  // Update 'now' even when not recording to keep UI responsive
   useEffect(() => {
-    if (!recording) return;
-    const interval = setInterval(() => {
-      setPromptTimer((prev) => {
-        if (prev <= 0) {
-          const nextPrompt = currentPrompt + 1;
-          if (nextPrompt < prompts.length) {
-            setCurrentPrompt(nextPrompt);
-            return durationPerPrompt;
-          } else {
-            if (mediaRecorder?.state === "recording") {
-              mediaRecorder.stop();
-            }
-            return 0;
-          }
-        }
-        return prev - 1;
-      });
-      setCountdown(() => {
-        const remainingPrompts = totalPrompts - currentPrompt - 1;
-        const remainingTime =
-          remainingPrompts * durationPerPrompt + promptTimer;
-        return remainingTime > 0 ? remainingTime : 0;
-      });
-    }, 1000);
+    const interval = setInterval(() => setNow(Date.now()), 100);
     return () => clearInterval(interval);
-  }, [
-    recording,
-    currentPrompt,
-    mediaRecorder,
-    promptTimer,
-    totalPrompts,
-    durationPerPrompt,
-    prompts.length,
-  ]);
+  }, []);
+
+  // Calculate timer values from elapsed time
+  const elapsed = testStartTime ? Math.floor((now - testStartTime) / 1000) : 0;
+  const totalDuration = totalPrompts * durationPerPrompt;
+  const countdown =
+    recording || testStartTime ? Math.max(0, totalDuration - elapsed) : 0;
+  const currentPrompt =
+    recording || testStartTime ? Math.floor(elapsed / durationPerPrompt) : 0;
+  let promptTimer =
+    recording || testStartTime
+      ? durationPerPrompt - (elapsed % durationPerPrompt)
+      : durationPerPrompt;
+  if (currentPrompt >= totalPrompts) {
+    promptTimer = 0;
+  }
+
+  // Debug calculation values (only when recording to avoid spam)
+  if (recording && process.env.NODE_ENV === "development") {
+    console.log("Calculation debug:", {
+      testStartTime,
+      now,
+      elapsed,
+      totalDuration,
+      recording,
+      countdown,
+      currentPrompt,
+      promptTimer,
+      timeDiff: testStartTime ? now - testStartTime : 0,
+    });
+  }
+
+  // Debug recording state changes
+  useEffect(() => {
+    console.log("Recording state changed:", recording);
+  }, [recording]);
+
+  // Debug MediaRecorder changes
+  useEffect(() => {
+    console.log("MediaRecorder changed:", mediaRecorder?.state || "null");
+  }, [mediaRecorder]);
+
+  // Debug loading state changes
+  useEffect(() => {
+    console.log("Loading state changed:", loading);
+  }, [loading]);
+
+  // Auto-stop recording when countdown reaches 0
+  useEffect(() => {
+    if (recording && countdown <= 0) {
+      console.log("Countdown reached 0, auto-stopping recording");
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+      }
+      // Stop the timer by resetting testStartTime
+      setTestStartTime(null);
+      setRecording(false);
+      // Immediately stop camera stream to turn off indicator
+      stopCameraStream();
+      console.log(
+        "Timer stopped and camera cleaned up due to countdown reaching 0"
+      );
+    }
+  }, [recording, countdown, mediaRecorder, cameraStream]);
+
+  // Removed the problematic useEffect that was resetting testStartTime
 
   const startTest = async () => {
     if (cameraActive || loading || recording || isUploading) return;
     const cameraAllowed = await checkCameraPermission();
     const micAllowed = await checkMicrophonePermission();
     if (!cameraAllowed || !micAllowed) return;
+
+    // Set recording state immediately
     setLoading(true);
     setError(null);
+    const startTime = Date.now();
+    setTestStartTime(startTime);
+    setNow(startTime);
     setRecording(true);
-    setCurrentPrompt(0);
-    setPromptTimer(durationPerPrompt);
     setIsRecordingFinished(false);
+    console.log(
+      "Starting test, setting recording to true, startTime:",
+      startTime
+    );
+
     showMessage(`${testTypeLabel} started...`);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -186,33 +263,73 @@ const EvolviSense = ({
           setError("Failed to play video stream: " + err.message);
         });
       };
-      let mimeType = "video/mp4";
+      // Browser-compatible MediaRecorder setup with WebM priority
+      let mimeType = null;
+      let fileExtension = "webm"; // Default to WebM
       const mimeTypes = [
+        "video/webm;codecs=vp9,opus",
+        "video/webm;codecs=vp8,opus",
+        "video/webm",
         "video/mp4;codecs=h264,aac",
         "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
         "video/mp4",
       ];
+
       for (const type of mimeTypes) {
         if (MediaRecorder.isTypeSupported(type)) {
           mimeType = type;
+          // Set file extension based on MIME type
+          if (type.startsWith("video/webm")) {
+            fileExtension = "webm";
+          } else if (type.startsWith("video/mp4")) {
+            fileExtension = "mp4";
+          }
+          console.log(
+            "Using MIME type:",
+            mimeType,
+            "with extension:",
+            fileExtension
+          );
           break;
         }
       }
-      const recorder = new MediaRecorder(stream, {
+
+      if (!mimeType) {
+        throw new Error("No supported video MIME type found in this browser");
+      }
+
+      const recorderOptions = {
         mimeType,
         videoBitsPerSecond: 2500000,
-      });
+      };
+
+      console.log("Recorder options:", recorderOptions);
+      console.log(
+        "Selected MIME type:",
+        mimeType,
+        "File extension:",
+        fileExtension
+      );
+
+      const recorder = new MediaRecorder(stream, recorderOptions);
+      console.log("Created MediaRecorder:", recorder, "state:", recorder.state);
       setMediaRecorder(recorder);
       const chunks = [];
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunks.push(e.data);
       };
       recorder.onstop = () => {
+        console.log("Recording stopped, chunks length:", chunks.length);
+
+        // Camera stream is already stopped by stopCamera function
+        // Just stop the timer by resetting testStartTime
+        setTestStartTime(null);
         setRecording(false);
-        setCountdown(null);
-        setCurrentPrompt(0);
-        setPromptTimer(durationPerPrompt);
-        showMessage(`${testTypeLabel} finished. Please submit or cancel.`);
+        setCameraActive(false);
+        console.log(
+          "Timer stopped after recording (camera already cleaned up)"
+        );
+
         if (chunks.length > 0) {
           const blob = new Blob(chunks, { type: mimeType });
           if (blob.size > 100 * 1024 * 1024) {
@@ -220,44 +337,95 @@ const EvolviSense = ({
             return;
           }
           setRecordedBlob(blob);
-          setRecordedVideoUrl(URL.createObjectURL(blob));
+          // Store the file extension for upload
+          setRecordedFileExtension(fileExtension);
+          const videoUrl = URL.createObjectURL(blob);
+          setRecordedVideoUrl(videoUrl);
           setVideoDuration(totalPrompts * durationPerPrompt);
           setIsRecordingFinished(true);
+          console.log(
+            "Recording finished with video, setting isRecordingFinished to true, videoUrl:",
+            videoUrl,
+            "blob size:",
+            blob.size,
+            "file extension:",
+            fileExtension
+          );
+          showMessage(`${testTypeLabel} finished. Please submit or cancel.`);
           chunks.length = 0;
+        } else {
+          // If no chunks, still set recording as finished
+          setIsRecordingFinished(true);
+          console.log(
+            "Recording finished without video, setting isRecordingFinished to true"
+          );
+          showMessage(`${testTypeLabel} finished. Please submit or cancel.`);
         }
       };
       recorder.start(100);
-      setCountdown(totalPrompts * durationPerPrompt);
+      // Timer is now handled by testStartTime
     } catch (err) {
+      console.error("Error starting test:", err);
       setError(
         `Failed to start ${testTypeLabel.toLowerCase()}: ` + err.message
       );
       setRecording(false);
-      setCountdown(null);
+      setMediaRecorder(null);
     } finally {
       setLoading(false);
     }
   };
 
   const stopCamera = () => {
-    if (!cameraActive && !recording) return;
+    console.log(
+      "Stop camera called, isRecordingFinished:",
+      isRecordingFinished,
+      "recordedVideoUrl:",
+      recordedVideoUrl,
+      "mediaRecorder state:",
+      mediaRecorder?.state,
+      "recording:",
+      recording
+    );
+
+    // Stop the media recorder if it's recording
     if (mediaRecorder && mediaRecorder.state === "recording") {
+      console.log("Stopping media recorder, will wait for onstop callback");
+      // Immediately stop camera stream to turn off indicator
+      stopCameraStream();
       mediaRecorder.stop();
+      // Don't reset recording states yet - wait for onstop callback
+      setCameraActive(false);
+      setRecording(false);
+      showMessage("Stopping recording...");
+      return;
     }
-    if (cameraStream) {
-      cameraStream.getTracks().forEach((track) => track.stop());
-      setCameraStream(null);
+
+    // If we have a finished recording, preserve it
+    if (isRecordingFinished || recordedVideoUrl) {
+      console.log("Preserving finished recording");
+      // Just stop the camera stream
+      stopCameraStream();
+      setRecording(false);
+      showMessage("Camera stopped, recording preserved");
+      return;
     }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-      videoRef.current.pause();
-    }
+
+    // Stop camera stream
+    stopCameraStream();
+
+    // Reset all states if no recording was made
     setCameraActive(false);
     setRecording(false);
-    setCountdown(null);
-    setCurrentPrompt(0);
-    setPromptTimer(durationPerPrompt);
     setIsRecordingFinished(false);
+    setRecordedVideoUrl(null);
+    setRecordedBlob(null);
+    setRecordedFileExtension("webm");
+    setUploadStatus({ message: "", progress: 0 });
+    setTestStartTime(null);
+    setNow(Date.now());
+    console.log("Timer stopped and camera cleaned up manually");
+
     showMessage("Camera stopped");
   };
 
@@ -265,9 +433,11 @@ const EvolviSense = ({
     if (recordedVideoUrl) URL.revokeObjectURL(recordedVideoUrl);
     setRecordedVideoUrl(null);
     setRecordedBlob(null);
+    setRecordedFileExtension("webm");
     stopCamera();
     setUploadStatus({ message: "", progress: 0 });
     setIsRecordingFinished(false);
+    setMediaRecorder(null);
     showMessage("Recording cancelled");
   };
 
@@ -275,11 +445,13 @@ const EvolviSense = ({
     if (recordedVideoUrl) URL.revokeObjectURL(recordedVideoUrl);
     setRecordedVideoUrl(null);
     setRecordedBlob(null);
+    setRecordedFileExtension("webm");
     stopCamera();
     resetSession();
     setVideoDuration(0);
     setUploadStatus({ message: "", progress: 0 });
     setIsRecordingFinished(false);
+    setMediaRecorder(null);
     showMessage("Session reset");
   };
 
@@ -313,7 +485,14 @@ const EvolviSense = ({
         setUploadStatus({ message: "Processing video...", progress: 10 });
         setUploadStatus({ message: "Uploading video...", progress: 30 });
         const formData = new FormData();
-        formData.append("file", videoBlob, "video.mp4");
+        const fileName = `video.${recordedFileExtension}`;
+        formData.append("file", videoBlob, fileName);
+        console.log(
+          "Uploading video with filename:",
+          fileName,
+          "MIME type:",
+          videoBlob.type
+        );
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 300000);
         const response = await fetch(
@@ -461,9 +640,12 @@ const EvolviSense = ({
   useEffect(() => {
     return () => {
       if (recordedVideoUrl) URL.revokeObjectURL(recordedVideoUrl);
-      stopCamera();
+      stopCameraStream();
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+      }
     };
-  }, [recordedVideoUrl]);
+  }, []); // Only run on component unmount
 
   const LineChartTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -516,12 +698,20 @@ const EvolviSense = ({
           <div className="lg:col-span-1">
             <div className="relative w-full rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl bg-white">
               {recordedVideoUrl ? (
-                <video
-                  ref={videoRef}
-                  src={recordedVideoUrl}
-                  controls
-                  className="w-full h-[400px] object-cover rounded-2xl"
-                />
+                (() => {
+                  console.log(
+                    "Rendering recorded video preview:",
+                    recordedVideoUrl
+                  );
+                  return (
+                    <video
+                      ref={videoRef}
+                      src={recordedVideoUrl}
+                      controls
+                      className="w-full h-[400px] object-cover rounded-2xl"
+                    />
+                  );
+                })()
               ) : (
                 <>
                   <video
@@ -533,12 +723,12 @@ const EvolviSense = ({
                       cameraActive ? "block" : "hidden"
                     }`}
                   />
-                  {!cameraActive && (
+                  {!cameraActive && !recordedVideoUrl && (
                     <div className="w-full h-[400px] flex items-center justify-center bg-gray-200 rounded-2xl">
                       <span className="text-gray-500 text-lg">Camera Off</span>
                     </div>
                   )}
-                  {recording && countdown !== null && (
+                  {recording && countdown > 0 && (
                     <div className="absolute top-4 right-4 bg-red-600 text-white rounded-full p-2 flex items-center animate-pulse">
                       <FontAwesomeIcon icon={faVideo} className="mr-2" />
                       <span>{countdown}s</span>
@@ -560,7 +750,7 @@ const EvolviSense = ({
                 </div>
               )}
             </div>
-            {recording && (
+            {(recording || (cameraActive && currentPrompt >= 0)) && (
               <div className="mt-4 bg-white rounded-2xl p-4 shadow-lg border border-gray-100 transition-all duration-500 transform animate-fadeIn">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center">
@@ -575,7 +765,11 @@ const EvolviSense = ({
                   </div>
                   <span className="text-sm text-gray-500">{promptTimer}s</span>
                 </div>
-                <p className="text-gray-700 mb-4">{prompts[currentPrompt]}</p>
+                <p className="text-gray-700 mb-4">
+                  {prompts && prompts[currentPrompt]
+                    ? prompts[currentPrompt]
+                    : "Loading question..."}
+                </p>
                 <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-blue-500 h-2 rounded-full transition-all duration-1000 ease-linear"
@@ -586,26 +780,46 @@ const EvolviSense = ({
                 </div>
               </div>
             )}
-            {isRecordingFinished && !loading && (
-              <div className="flex justify-between mt-4 space-x-4">
-                <button
-                  onClick={submitVideo}
-                  disabled={loading || isUploading}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-xl hover:from-green-600 hover:to-teal-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
-                >
-                  <FontAwesomeIcon icon={faCheck} className="mr-2" />
-                  Submit
-                </button>
-                <button
-                  onClick={cancelRecording}
-                  disabled={loading || isUploading}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
-                >
-                  <FontAwesomeIcon icon={faTimes} className="mr-2" />
-                  Cancel
-                </button>
+            {/* Debug info for Firefox */}
+            {process.env.NODE_ENV === "development" && (
+              <div
+                className="mt-2 p-2 bg-yellow-100 border border-yellow-400 rounded text-xs"
+                key={`debug-${recording}-${countdown}-${currentPrompt}-${promptTimer}`}
+              >
+                Debug: recording={recording.toString()}, currentPrompt=
+                {currentPrompt}, promptTimer={promptTimer}, countdown=
+                {countdown}, totalPrompts={totalPrompts}
               </div>
             )}
+            {(isRecordingFinished || recordedVideoUrl) &&
+              !loading &&
+              (() => {
+                console.log("Rendering submit/cancel buttons:", {
+                  isRecordingFinished,
+                  recordedVideoUrl,
+                  loading,
+                });
+                return true;
+              })() && (
+                <div className="flex justify-between mt-4 space-x-4">
+                  <button
+                    onClick={submitVideo}
+                    disabled={loading || isUploading}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-xl hover:from-green-600 hover:to-teal-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
+                  >
+                    <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                    Submit
+                  </button>
+                  <button
+                    onClick={cancelRecording}
+                    disabled={loading || isUploading}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
+                  >
+                    <FontAwesomeIcon icon={faTimes} className="mr-2" />
+                    Cancel
+                  </button>
+                </div>
+              )}
             {(!isRecordingFinished || loading) && (
               <div className="flex justify-between flex-wrap gap-3 mt-4 space-x-4">
                 <button
