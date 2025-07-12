@@ -97,7 +97,7 @@ export default function Signup() {
       <div className="container mx-auto px-4 py-8 flex">
         <div className="flex flex-col lg:flex-row w-full">
           {/* Left Section */}
-          <div className="LeftSection w-full lg:w-1/2 rounded-t-3xl lg:rounded-l-3xl lg:rounded-tr-none bg-blue-100 flex flex-col items-start justify-start p-4 md:p-6 relative">
+          <div className="LeftSection w-full lg:w-1/2 rounded-t-3xl lg:rounded-l-3xl lg:rounded-tr-none lg:rounded-br-none bg-blue-100 flex flex-col items-start justify-start p-4 md:p-6 relative lg:h-[730px]">
             <button
               onClick={() => navigate(-1)}
               className="arrow-left text-gray-500 hover:text-gray-900 absolute top-4 left-4 text-2xl"
@@ -113,7 +113,7 @@ export default function Signup() {
               />
             </div>
 
-            <div className="image flex justify-center items-center w-full h-[90vh]">
+            <div className="image flex justify-center items-center w-full h-full">
               <img
                 src={studentLearningImg}
                 alt="Login Illustration"
@@ -123,7 +123,7 @@ export default function Signup() {
           </div>
 
           {/* Right Section */}
-          <div className="RightSection w-full lg:w-1/2 lg:h-[730px] rounded-b-3xl lg:rounded-r-3xl lg:rounded-bl-none bg-white shadow-lg py-6 md:py-9 px-4 md:px-6">
+          <div className="RightSection w-full lg:w-1/2 lg:h-[730px] rounded-b-3xl lg:rounded-r-3xl lg:rounded-tl-none lg:rounded-bl-none bg-white shadow-lg py-6 md:py-9 px-4 md:px-6">
             <div className="header text-center py-3">
               <h1 className="text-xl md:text-2xl font-bold text-blue-400">
                 Welcome to Evolvify

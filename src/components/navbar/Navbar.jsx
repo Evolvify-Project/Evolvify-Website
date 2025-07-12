@@ -114,7 +114,7 @@ export default function Navbar() {
           </Link>
 
           <ul className="hidden md:flex gap-14 items-center">
-            {["Home", "Courses", "Practice", "Community", "Chatbot"].map(
+            {["Home", "Courses", "EvolviSense", "Community", "Chatbot"].map(
               (item) => (
                 <li key={item}>
                   <NavLink
@@ -223,7 +223,7 @@ export default function Navbar() {
         {isOpen && (
           <div className="md:hidden mt-4 px-4">
             <ul className="flex flex-col gap-4">
-              {["Home", "Courses", "Practice", "Community", "Chatbot"].map(
+              {["Home", "Courses", "EvolviSense", "Community", "Chatbot"].map(
                 (item) => (
                   <li key={item}>
                     <NavLink

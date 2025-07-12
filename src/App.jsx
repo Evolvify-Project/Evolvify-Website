@@ -83,7 +83,7 @@ function App() {
           errorElement: <ErrorPage />,
         },
         {
-          path: "practice",
+          path: "evolvisense",
           element: <PremiumSection />,
           errorElement: <ErrorPage />,
         },

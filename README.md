@@ -1,4 +1,3 @@
-
 # Evolvify 🎯
 
 **Evolvify** is a graduation project built to help individuals develop and improve their essential soft skills for the job market. It provides an interactive and engaging learning environment with practical tools and AI-powered features.
@@ -14,11 +13,10 @@
 
 ## 🛠️ Technologies Used
 
-- **Frontend:** React.js, Tailwind CSS, Formik, Yup  
-- **Backend:**   .NET
-- **AI Tools:** Computer Vision (for stress detection)  
+- **Frontend:** React.js, Tailwind CSS, Formik, Yup
+- **Backend:** .NET
+- **AI Tools:** Computer Vision (for stress detection)
 - **APIs:** REST APIs for login, post handling, etc.
-
 
 ## 🧪 How to Run the Project
 
@@ -38,6 +36,16 @@ npm start
 
 > Make sure you have Node.js and npm installed.
 
+## 🔧 Environment Configuration
+
+The application uses environment variables to avoid hardcoding the Vercel deployment URL. Create a `.env` file in the root directory with the following variable:
+
+```bash
+# Base URL for the application (default: Vercel deployment)
+VITE_BASE_URL=https://evolvify-website.vercel.app
+```
+
+This environment variable is used to avoid hardcoding the Vercel link throughout the application.
 
 ## 📜 License
 

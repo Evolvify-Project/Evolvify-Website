@@ -3,6 +3,7 @@ import { Dialog } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import award from "../assets/images/Awards.jpg";
 import axios from "axios";
+import environment from "../config/environment";
 
 const PracticeSection = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,25 +54,33 @@ const PracticeSection = () => {
       }
     }
 
-    if (path === "/payment") {
-      navigate("/payment");
-    } else {
-      window.location.href = `https://evolvify-website.vercel.app${path}`;
-    }
+    // Use React Router navigate for internal routes
+    navigate(path);
   };
 
-  if (loading) return <p className="text-[#233A66] text-center py-10">Loading subscription status...</p>;
+  if (loading)
+    return (
+      <p className="text-[#233A66] text-center py-10">
+        Loading subscription status...
+      </p>
+    );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-slate-50 to-blue-50 flex items-center justify-center py-16">
       <section className="container bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-10 w-full max-w-3xl text-center transition-all duration-500 transform hover:scale-102 border border-gray-200">
         {/* Award Icon and Title */}
         <div className="mb-10">
-          <img src={award} alt="Premium" className="h-32 mx-auto mb-6 rounded-xl shadow-lg border-2 border-white/80" />
+          <img
+            src={award}
+            alt="Premium"
+            className="h-32 mx-auto mb-6 rounded-xl shadow-lg border-2 border-white/80"
+          />
           <h2 className="text-4xl font-extrabold mb-2 leading-tight bg-gradient-to-r from-[#64B5F6] to-[#1E3A8A] bg-clip-text text-transparent drop-shadow-md">
             Upgrade to Premium to Start Practice
           </h2>
-          <p className="text-gray-600 text-lg">Unlock your potential with premium features!</p>
+          <p className="text-gray-600 text-lg">
+            Unlock your potential with premium features!
+          </p>
         </div>
 
         {/* Upgrade Button */}
@@ -93,7 +102,11 @@ const PracticeSection = () => {
                 {label}
               </span>
               <button
-                onClick={() => handleAction(i === 0 ? "/interview-test" : "/presentation-test")}
+                onClick={() =>
+                  handleAction(
+                    i === 0 ? "/interview-test" : "/presentation-test"
+                  )
+                }
                 className="bg-gradient-to-r from-[#4FC3F7] via-[#42A5F5] to-[#1E88E5] text-white font-medium py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out"
               >
                 Practice Now
